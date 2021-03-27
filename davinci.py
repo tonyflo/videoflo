@@ -24,12 +24,13 @@ def create_project(resolve):
         project_manager = resolve.GetProjectManager()
     except AttributeError:
         print('DaVinci Resolve probably not open')
+        return None
 
     # create the project
     project = project_manager.CreateProject(project_name)
     if not project:
         print('Unable to create a project. Does it already exist?')
-        sys.exit()
+        return None
 
     # set project settings
     project.SetSetting("timelineFrameRate", fps)
@@ -58,7 +59,8 @@ def go():
     project_path = get_project_dir()
     resolve = GetResolve()
     project = create_project(resolve)
-    import_files(resolve, project_path)
-    setup(resolve)
+    if project is not None:
+        import_files(resolve, project_path)
+        setup(resolve)
 
 go()
