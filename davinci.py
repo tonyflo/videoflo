@@ -51,6 +51,14 @@ def import_files(resolve, project_path):
     storage = resolve.GetMediaStorage()
     storage.AddItemListToMediaPool(project_path)
 
+# set render settings
+def set_render_settings(project, project_path):
+    render_settings = {
+        "TargetDir": project_path,
+        "CustomName": project_name,
+    }
+    project.SetRenderSettings(render_settings)
+
 # open the Edit page in DaVinci Resolve
 def setup(resolve):
     resolve.OpenPage('edit')
@@ -60,6 +68,7 @@ def go():
     resolve = GetResolve()
     project = create_project(resolve)
     if project is not None:
+        set_render_settings(project, project_path)
         import_files(resolve, project_path)
         setup(resolve)
 
