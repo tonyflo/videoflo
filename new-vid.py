@@ -6,12 +6,19 @@ import sys
 import mac_tag
 from subprocess import call
 
-root_dir = '/Volumes/vid/'
+try:
+    root_dir = sys.argv[2]
+except IndexError:
+    root_dir = '/Volumes/vid/'
 
 new_proj = sys.argv[1] # get new of project from command line input
 
 new_dir = os.path.join(root_dir, new_proj)
-os.mkdir(new_dir)
+try:
+    os.mkdir(new_dir)
+except FileNotFoundError:
+    print('Directory {} does not exist'.format(root_dir))
+    sys.exit()
 mac_tag.add(['Script'], [new_dir])
 
 for txt in ['yt.txt', 'notes.txt']:
