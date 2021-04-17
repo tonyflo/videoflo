@@ -1,14 +1,14 @@
-#!/Users/tonyflorida/.pyenv/shims/python
-
 import os
 import shutil
 import mac_tag
 from glob import glob
 from pathlib import Path
 from subprocess import call
+from videoflo import init
+config = init()
 
-root_dir = Path('/Volumes/vid/')
-upload = mac_tag.find(["Upload"])
+root_dir = Path(config['main']['root_dir'])
+upload = mac_tag.find(['Upload'])
 
 upload_list = []
 for up in upload:

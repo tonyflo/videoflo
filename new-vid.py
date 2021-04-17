@@ -1,17 +1,14 @@
-#!/Users/tonyflorida/.pyenv/shims/python
 # Create structure for new video project
 
 import os
 import sys
 import mac_tag
 from subprocess import call
-
-try:
-    root_dir = sys.argv[2]
-except IndexError:
-    root_dir = '/Volumes/vid/'
+from videoflo import init
+config = init()
 
 new_proj = sys.argv[1] # get new of project from command line input
+root_dir = config['main']['root_dir']
 
 new_dir = os.path.join(root_dir, new_proj)
 try:

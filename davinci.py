@@ -1,21 +1,10 @@
-#!/Users/tonyflorida/.pyenv/shims/python
-
 import os
 import sys
-
-# TODO: these are not cross-platform and this is hacky
-RESOLVE_SCRIPT_API="/Library/Application Support/Blackmagic Design/DaVinci Resolve/Developer/Scripting/Examples"
-MODULE="/Library/Application Support/Blackmagic Design/DaVinci Resolve/Developer/Scripting/Modules"
-sys.path.append(RESOLVE_SCRIPT_API)
-sys.path.append(MODULE)
-
+from videoflo import init
+config = init()
 from python_get_resolve import GetResolve
 
 # TODO: make these configurable
-root_dir = '/Volumes/vid/'
-fps = 24
-width = 3840
-height = 2160
 project_name = sys.argv[1] # get project name from command line argument
 
 # create a DaVinci Resolve project
@@ -33,16 +22,20 @@ def create_project(resolve):
         return None
 
     # set project settings
-    project.SetSetting("timelineFrameRate", fps)
-    project.SetSetting("timelineResolutionWidth", width)
-    project.SetSetting("timelineResolutionHeight", height)
+    for setting in ['FrameRate', 'ResolutionWidth', 'ResolutionHeight']:
+        if not config.has_option('video', setting):
+            continue
+        name = 'timeline{}'.format(setting)
+        value = int(config['video'][setting])
+        project.SetSetting(name, value);
     return project
 
 # return project directory
 def get_project_dir():
+    root_dir = config['main']['root_dir']
     project_path = os.path.join(root_dir, project_name)
     if not os.path.exists(project_path):
-        print('Folder {} does not exist at {}'.format(project_name, root_dir))
+        print('Folder {} does not exist'.format(project_path))
         sys.exit()
     return project_path
 
@@ -50,6 +43,16 @@ def get_project_dir():
 def import_files(resolve, project_path):
     storage = resolve.GetMediaStorage()
     storage.AddItemListToMediaPool(project_path)
+
+# import intro/outro timeline
+def import_tro(project):
+    mediapool = project.GetMediaPool()
+    mediapool.ImportTimelineFromFile('/Users/tonyflorida/Movies/thrifty-tony/Timeline1.drt')
+    folder = mediapool.GetCurrentFolder()
+    clips = folder.GetClipList()
+    tro = mediapool.AddSubFolder(folder, 'tro')
+    mediapool.MoveClips(clips[1:], tro) # move all but timeline
+    mediapool.SetCurrentFolder(folder)
 
 # set render settings
 def set_render_settings(project, project_path):
@@ -69,6 +72,7 @@ def go():
     project = create_project(resolve)
     if project is not None:
         set_render_settings(project, project_path)
+        import_tro(project)
         import_files(resolve, project_path)
         setup(resolve)
 

@@ -1,12 +1,12 @@
-#!/Users/tonyflorida/.pyenv/shims/python
 # Create structure for new video project
 
-import os
 import mac_tag
 from pathlib import Path
+from videoflo import init
+config = init()
 
-tag = "Upload"
-root_dir = Path('/Volumes/vid/')
+tag = 'Upload'
+root_dir = Path(config['main']['root_dir'])
 upload = mac_tag.find([tag])
 
 count = 0
