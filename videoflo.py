@@ -1,20 +1,27 @@
-import os
-import sys
 import configparser
+from python_get_resolve import GetResolve
 
-def init():
-    # read settings file
-    config = configparser.ConfigParser()
-    config.read('settings.ini')
 
-    # pull out settings
-    api = config['main']['api']
-    examples = os.path.join(api, 'Examples')
-    modules = os.path.join(api, 'Modules')
+class VideoFlo():
 
-    # append to system path
-    sys.path.append(examples)
-    sys.path.append(modules)
+    def __init__(self):
+        # read settings file
+        config = configparser.ConfigParser()
+        config.read('settings.ini')
+        self.config = config
+        self.dir = config['main']['root_dir']
+        self.channels = self._get_channels()
 
-    return config
+    def get_resolve(self):
+        api = self.config['main']['api']
+        return GetResolve()
+
+    def _get_channels(self):
+        return set(self.config.sections()) - set(['main', 'video'])
+
+    def get_channel_dirs(self):
+        return [self.config[channel]['path'] for channel in self.channels]
+
+    def get(self, key, value):
+        return self.config[key][value]
 

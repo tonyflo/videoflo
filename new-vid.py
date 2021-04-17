@@ -5,8 +5,7 @@ import sys
 import mac_tag # TODO not cross platform
 import argparse
 from subprocess import call
-from videoflo import init
-config = init()
+from videoflo import VideoFlo
 
 # read command line arguments
 def get_arguments(channels):
@@ -21,14 +20,17 @@ def get_arguments(channels):
     return args
 
 # create the project directory for this video
-def make_project_directory(name, channel, root_dir):
-    channel_dir = config[channel]['path']
+def make_project_directory(name, channel_dir, root_dir):
     proj_dir = os.path.join(root_dir, channel_dir, name)
     try:
         os.mkdir(proj_dir)
     except FileNotFoundError:
         print('Directory {} does not exist'.format(proj_dir))
         return None
+    except FileExistsError:
+        print('Directory {} already exist'.format(proj_dir))
+        return None
+
     return proj_dir
 
 # create files for the project
@@ -44,14 +46,12 @@ def make_directories(proj_dir):
         os.mkdir(new_folder)
 
 def go():
-    channels = set(config.sections()) - set(['main', 'video'])
-    args = get_arguments(channels)
+    flo = VideoFlo()
+    args = get_arguments(flo.channels)
 
     name = args.name
-    channel = args.channel
-    root_dir = config['main']['root_dir']
-
-    proj_dir = make_project_directory(name, channel, root_dir)
+    channel_dir = flo.get(args.channel, 'path')
+    proj_dir = make_project_directory(name, channel_dir, flo.dir)
     if proj_dir is not None:
         make_files(proj_dir)
         make_directories(proj_dir)

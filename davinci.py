@@ -1,14 +1,16 @@
 import os
-import sys
-from videoflo import init
-config = init()
-from python_get_resolve import GetResolve
+import argparse
+from videoflo import VideoFlo
 
-# TODO: make these configurable
-project_name = sys.argv[1] # get project name from command line argument
+# read command line arguments
+def get_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('name', help='Name of video project')
+    args = parser.parse_args()
+    return args
 
 # create a DaVinci Resolve project
-def create_project(resolve):
+def create_project(resolve, project_name, flo):
     try:
         project_manager = resolve.GetProjectManager()
     except AttributeError:
@@ -23,21 +25,21 @@ def create_project(resolve):
 
     # set project settings
     for setting in ['FrameRate', 'ResolutionWidth', 'ResolutionHeight']:
-        if not config.has_option('video', setting):
+        if not flo.config.has_option('video', setting):
             continue
         name = 'timeline{}'.format(setting)
-        value = int(config['video'][setting])
+        value = int(flo.config['video'][setting])
         project.SetSetting(name, value);
     return project
 
 # return project directory
-def get_project_dir():
-    root_dir = config['main']['root_dir']
-    project_path = os.path.join(root_dir, project_name)
-    if not os.path.exists(project_path):
-        print('Folder {} does not exist'.format(project_path))
-        sys.exit()
-    return project_path
+def get_project_path(project_name, root_dir, channel_dirs):
+    # search all channel directories so we don't have to on command line
+    for channel_dir in channel_dirs:
+        project_path = os.path.join(root_dir, channel_dir, project_name)
+        if os.path.exists(project_path):
+            return project_path
+    return None
 
 # import files (video, audio, etc.) from project path
 def import_files(resolve, project_path):
@@ -55,7 +57,7 @@ def import_tro(project):
     mediapool.SetCurrentFolder(folder)
 
 # set render settings
-def set_render_settings(project, project_path):
+def set_render_settings(project, project_path, project_name):
     render_settings = {
         "TargetDir": project_path,
         "CustomName": project_name,
@@ -67,13 +69,24 @@ def setup(resolve):
     resolve.OpenPage('edit')
 
 def go():
-    project_path = get_project_dir()
-    resolve = GetResolve()
-    project = create_project(resolve)
-    if project is not None:
-        set_render_settings(project, project_path)
-        import_tro(project)
-        import_files(resolve, project_path)
-        setup(resolve)
+    flo = VideoFlo()
+    args = get_arguments()
+
+    project_name = args.name
+    channel_dirs = flo.get_channel_dirs()
+    project_path = get_project_path(project_name, flo.dir, channel_dirs)
+    if project_path is None:
+        print('Could not find {} at {}'.format(project_name, flo.dir))
+        return
+
+    resolve = flo.get_resolve()
+    project = create_project(resolve, project_name, flo)
+    if project is None:
+        return
+
+    set_render_settings(project, project_path, project_name)
+    import_tro(project)
+    import_files(resolve, project_path)
+    setup(resolve)
 
 go()
