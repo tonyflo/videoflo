@@ -26,11 +26,6 @@ def create_project(resolve, project_name, flo):
         project.SetSetting(name, value);
     return project
 
-# return project directory
-def get_project_path(project_name, root_dir, channel):
-    project_path = os.path.join(root_dir, channel['path'], project_name)
-    return project_path
-
 # import files (video, audio, etc.) from project path
 def import_files(resolve, project_path):
     storage = resolve.GetMediaStorage()
@@ -57,14 +52,6 @@ def import_timeline(project, channel):
     mediapool.MoveClips(clips[1:], tro) # move all but timeline
     mediapool.SetCurrentFolder(folder)
 
-# set render settings
-def set_render_settings(project, project_path, project_name):
-    render_settings = {
-        "TargetDir": project_path,
-        "CustomName": project_name,
-    }
-    project.SetRenderSettings(render_settings)
-
 # open the Edit page in DaVinci Resolve
 def setup(resolve):
     resolve.OpenPage('edit')
@@ -74,11 +61,12 @@ def go():
     args = flo.get_video_arguments(channel_required=False)
 
     project_name = args.name
-    channel = flo.get_channel(project_name, args)
+    channel_arg = args.channel
+    channel = flo.get_channel(project_name, channel_arg)
     if channel is None:
         print('Could not find channel for project {}'.format(project_name))
         return
-    project_path = get_project_path(project_name, flo.dir, channel)
+    project_path = flo.get_project_path(project_name, channel)
     if project_path is None:
         print('Could not find {} at {}'.format(project_name, flo.dir))
         return
@@ -88,7 +76,6 @@ def go():
     if project is None:
         return
 
-    set_render_settings(project, project_path, project_name)
     import_timeline(project, channel)
     import_files(resolve, project_path)
     setup(resolve)
