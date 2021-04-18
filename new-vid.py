@@ -3,21 +3,8 @@
 import os
 import sys
 import mac_tag # TODO not cross platform
-import argparse
 from subprocess import call
 from videoflo import VideoFlo
-
-# read command line arguments
-def get_arguments(channels):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('name',
-                        help='Name of video project')
-    parser.add_argument('-c', '--channel',
-                        choices=channels,
-                        required=True,
-                        help='Channel associated with the video')
-    args = parser.parse_args()
-    return args
 
 # create the project directory for this video
 def make_project_directory(name, channel_dir, root_dir):
@@ -47,10 +34,10 @@ def make_directories(proj_dir):
 
 def go():
     flo = VideoFlo()
-    args = get_arguments(flo.channels)
+    args = flo.get_arguments(channel_required=True)
 
     name = args.name
-    channel_dir = flo.get(args.channel, 'path')
+    channel_dir = flo.config[args.channel]['path']
     proj_dir = make_project_directory(name, channel_dir, flo.dir)
     if proj_dir is not None:
         make_files(proj_dir)

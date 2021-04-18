@@ -1,13 +1,7 @@
-import os
-import argparse
-from videoflo import VideoFlo
+# Create a DaVinci Resolve project for a video directory
 
-# read command line arguments
-def get_arguments():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('name', help='Name of video project')
-    args = parser.parse_args()
-    return args
+import os
+from videoflo import VideoFlo
 
 # create a DaVinci Resolve project
 def create_project(resolve, project_name, flo):
@@ -33,13 +27,9 @@ def create_project(resolve, project_name, flo):
     return project
 
 # return project directory
-def get_project_path(project_name, root_dir, channel_dirs):
-    # search all channel directories so we don't have to on command line
-    for channel_dir in channel_dirs:
-        project_path = os.path.join(root_dir, channel_dir, project_name)
-        if os.path.exists(project_path):
-            return project_path
-    return None
+def get_project_path(project_name, root_dir, channel):
+    project_path = os.path.join(root_dir, channel['path'], project_name)
+    return project_path
 
 # import files (video, audio, etc.) from project path
 def import_files(resolve, project_path):
@@ -47,9 +37,20 @@ def import_files(resolve, project_path):
     storage.AddItemListToMediaPool(project_path)
 
 # import intro/outro timeline
-def import_tro(project):
+def import_timeline(project, channel):
     mediapool = project.GetMediaPool()
-    mediapool.ImportTimelineFromFile('/Users/tonyflorida/Movies/thrifty-tony/Timeline1.drt')
+    try:
+        timeline_path = channel['timeline']
+    except KeyError:
+        return # silently return if no timeline found for this channel
+    if not os.path.exists(timeline_path):
+        print('Timeline at {} does not exist'.format(timeline_path))
+        return
+    timeline = mediapool.ImportTimelineFromFile(timeline_path)
+    if timeline is None:
+        name = channel['name']
+        print('No timeline found for {} at {}'.format(name, timeline_path))
+        return
     folder = mediapool.GetCurrentFolder()
     clips = folder.GetClipList()
     tro = mediapool.AddSubFolder(folder, 'tro')
@@ -70,11 +71,14 @@ def setup(resolve):
 
 def go():
     flo = VideoFlo()
-    args = get_arguments()
+    args = flo.get_arguments()
 
     project_name = args.name
-    channel_dirs = flo.get_channel_dirs()
-    project_path = get_project_path(project_name, flo.dir, channel_dirs)
+    channel = flo.get_channel(project_name, args)
+    if channel is None:
+        print('Could not find channel for project {}'.format(project_name))
+        return
+    project_path = get_project_path(project_name, flo.dir, channel)
     if project_path is None:
         print('Could not find {} at {}'.format(project_name, flo.dir))
         return
@@ -85,7 +89,7 @@ def go():
         return
 
     set_render_settings(project, project_path, project_name)
-    import_tro(project)
+    import_timeline(project, channel)
     import_files(resolve, project_path)
     setup(resolve)
 
