@@ -1,7 +1,10 @@
 # videoflo
 A series of Python scripts to help automate the video production workflow in DaVinci Resolve.
 
-## Prerequisites
+## Installation
+- A modern version of MacOS
+- Tested on Python 3.8
+- [mac-tag](https://github.com/andrewp-as-is/mac-tag.py)
 
 ## Configuring Your Settings
 Configuration options can be specified in the `settings.ini` files. A description of individual configuration sections and settings are below.
@@ -18,7 +21,7 @@ Configuration options can be specified in the `settings.ini` files. A descriptio
   * **timeline** The path to an optional timeline file (.drt) that you'ld like to start with for each video on this channel
 
 ## Using videoflo
-There are 4 executable scripts in videoflo that allow you to automate various aspects of the video production workflow.
+There are 4 executable scripts in videoflo that allow you to automate various aspects of video production. The following is an overview of how those scripts fit into the video production workflow. While videoflo was designed specifically for tutorial-style videos with screen recordings that are destined for YouTube, the concepts here can be modified for other types of videos.
 
 ### 1. Create the Structure for a New Video
 Use `new-vid.py` to create the basic directory structure to house your video files, assets, thumbnails, etc. The `--channel` argument needs to match up with the `[channel]` section in your `settings.ini' file.
@@ -57,4 +60,4 @@ If you have multiple video project that you are editing sequentially, you can re
 When finished, the publishable video file will be rendered to the root of your project directory.
 
 ### 5. Create a Thumbnail
-Create a thumbnail for you video and put it in the root of your project directory. This should be a PNG file.
+Create a thumbnail for your video and put it in the root of your project directory. This should be a PNG file.
