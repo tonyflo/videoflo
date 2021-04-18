@@ -34,7 +34,7 @@ def make_directories(proj_dir):
 
 def go():
     flo = VideoFlo()
-    args = flo.get_arguments(channel_required=True)
+    args = flo.get_video_arguments()
 
     name = args.name
     channel_dir = flo.config[args.channel]['path']

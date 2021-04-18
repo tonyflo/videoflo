@@ -32,19 +32,29 @@ class VideoFlo():
         for channel in self.channels:
             channel_path = self.config[channel]['path']
             project_path = os.path.join(self.dir, channel_path, project)
-            print(project_path)
             if os.path.exists(project_path):
                 return self.config[channel]
+                # TODO: wrong return if multiple channels have same video name
         return None
 
-    # read command line arguments
-    def get_arguments(self, channel_required=False):
-        parser = argparse.ArgumentParser()
-        parser.add_argument('name',
-                            help='Name of video project')
+    def _add_channel_arg(self, parser, channel_required=True):
         parser.add_argument('-c', '--channel',
                             choices=self.channels,
                             required=channel_required,
                             help='Channel associated with the video')
+
+    # command line arguments for individual video
+    def get_video_arguments(self, channel_required=True):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('name',
+                            help='Name of video project')
+        self._add_channel_arg(parser, channel_required)
+        args = parser.parse_args()
+        return args
+
+    # command line arguments for a batch of videos for a channel
+    def get_channel_arguments(self):
+        parser = argparse.ArgumentParser()
+        self._add_channel_arg(parser)
         args = parser.parse_args()
         return args

@@ -71,7 +71,7 @@ def setup(resolve):
 
 def go():
     flo = VideoFlo()
-    args = flo.get_arguments()
+    args = flo.get_video_arguments(channel_required=False)
 
     project_name = args.name
     channel = flo.get_channel(project_name, args)
