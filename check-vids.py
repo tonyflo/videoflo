@@ -1,7 +1,7 @@
 # Check that a thumbnail and DaVinci Resolve project file exists for each
 # video project directory that's tagged as 'Upload'
 
-import mac_tag  # TODO: not cross platform
+import mac_tag
 from pathlib import Path
 from videoflo import VideoFlo
 
@@ -24,22 +24,23 @@ def check_vids(tag, channel_path):
     warn = 0
     for up in mac_tag.find([tag], [channel_path]):
         child = Path(up)
-        print('Checking {}'.format(child))
+        name = child.name
+        print('Checking {}'.format(name))
         count = count + 1
 
         num_drp = count_drps(child)
         if num_drp != 1:
             warn += 1
-            print('  WARNING: Found {} drp files in {}'.format(num_drp, child))
+            print('...Found {} drp files in {}'.format(num_drp, name))
 
         num_png = count_pngs(child)
         if num_png < 1:
             warn += 1
-            print('  WARNING: Found {} png files in {}'.format(num_png, child))
+            print('...Found {} png files in {}'.format(num_png, name))
 
     if warn == 0 and count > 0:
         print('All "{}" videos have a .drp and .png files'.format(tag))
-    if count == 0:
+    elif count == 0:
         print('Nothing to check')
     else:
         print('{} problem(s) found in {} projects'.format(warn, count))

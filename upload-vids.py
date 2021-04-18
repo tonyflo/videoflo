@@ -1,3 +1,5 @@
+# Copy the video files that tagged as 'Upload' to an _uploadme_ directory and tag these project directories as 'Backup'
+
 import os
 import shutil
 import mac_tag
@@ -15,24 +17,34 @@ def prepare_uploads(tag, channel_path):
         if len(mov) > 1:
             print('Multiple mov files found: {}'.format(mov))
             break
+
         if len(mov) == 0:
             print('No *.mov found in: {}'.format(up))
             break
+
         upload_list.append(mov[0])
     else: # this block only executes if we didn't break above
         if len(upload_list) == 0:
             print('No video files ready for upload')
             return
+
         # create temporary folder for just the mov files
         target_dir = os.path.join(channel_path, '_uploadme_')
         if os.path.exists(target_dir):
             print('The {} directory already exists'.format(target_dir))
             return
+
         os.mkdir(target_dir)
         for f in upload_list:
             filename = os.path.basename(f)
+            filepath = os.path.dirname(f)
             print('Copying {}'.format(filename))
             shutil.copy2(f, target_dir)
+
+            # update tag from Render to Upload
+            mac_tag.remove(['*'], [filepath])
+            mac_tag.add(['Backup'], [filepath])
+
         call(["open", target_dir])
 
 def go():

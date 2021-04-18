@@ -1,10 +1,16 @@
 # Render a batch of videos with the 'Render' tag
 
 import time
-import mac_tag  # TODO: not cross platform
+import mac_tag
 from pathlib import Path
 from videoflo import VideoFlo
 
+
+# delete all render jobs
+def delete_all_render_jobs(project):
+    status = project.DeleteAllRenderJobs()
+    if status == False:
+        print('Failed to delete render job for {}'.format(project_name))
 
 # set render settings
 def set_render_settings(project, project_name, project_path):
@@ -37,6 +43,8 @@ def render_vids(tag, channel, project_manager, flo):
             print('Failed to set render settings for {}'.format(project_name))
             continue
 
+        delete_all_render_jobs(project)
+
         status = project.AddRenderJob()
         if status == False:
             print('Failed to add render job for {}'.format(project_name))
@@ -44,17 +52,26 @@ def render_vids(tag, channel, project_manager, flo):
 
         status = project.StartRendering(isInteractiveMode=True)
         if status == False:
-            print('Failed to render {}'.format(project_name))
+            print('Failed to start render for {}'.format(project_name))
+            delete_all_render_jobs(project)
             continue
 
+        jobid = project.GetRenderJobs()[1]['JobId']
         print('Rendering {}'.format(project_name))
         while(project.IsRenderingInProgress()):
-            time.sleep(5)
+            time.sleep(10)
+            render_status = project.GetRenderJobStatus(jobid)
+            percent = render_status['CompletionPercentage']
+            print('...{}% complete'.format(percent))
 
-        status = project.DeleteAllRenderJobs()
-        if status == False:
-            print('Failed to delete render job for {}'.format(project_name))
+        render_status = project.GetRenderJobStatus(jobid)
+        job_status = render_status['JobStatus']
+        if job_status != 'Complete':
+            print('Failed to render {}'.format(project_name))
+            delete_all_render_jobs(project)
             continue
+
+        delete_all_render_jobs(project)
 
         # update tag from Render to Upload
         mac_tag.remove(['*'], [project_path])
@@ -74,6 +91,9 @@ def go():
     channel = flo.config[args.channel]
 
     resolve = flo.get_resolve()
+    if resolve is None:
+        print('Is DaVinci Resolve open?')
+        return
     resolve.OpenPage('deliver')
     project_manager = flo.get_project_manager(resolve)
 

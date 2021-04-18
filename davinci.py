@@ -72,6 +72,9 @@ def go():
         return
 
     resolve = flo.get_resolve()
+    if resolve is None:
+        print('Is DaVinci Resolve open?')
+        return
     project = create_project(resolve, project_name, flo)
     if project is None:
         return

@@ -2,7 +2,7 @@
 
 import os
 import sys
-import mac_tag # TODO not cross platform
+import mac_tag
 from subprocess import call
 from videoflo import VideoFlo
 
@@ -28,7 +28,7 @@ def make_files(proj_dir):
 
 # create directories for the project
 def make_directories(proj_dir):
-    for folder in ['gh5', 'screen']:
+    for folder in ['camera', 'screen']:
         new_folder = os.path.join(proj_dir, folder)
         os.mkdir(new_folder)
 

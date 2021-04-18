@@ -1,7 +1,7 @@
 # Export a DaVinci Project and update the video directory tag accordingly
 
 import os
-import mac_tag # TODO not cross platform
+import mac_tag
 from videoflo import VideoFlo
 
 
@@ -20,6 +20,9 @@ def update_tag(project_path):
 def go():
     flo = VideoFlo()
     resolve = flo.get_resolve()
+    if resolve is None:
+        print('Is DaVinci Resolve open?')
+        return
     project_manager = flo.get_project_manager(resolve)
     project = project_manager.GetCurrentProject()
     if project is None:
