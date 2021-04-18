@@ -33,6 +33,8 @@ Configuration options can be specified in the `settings.ini` files. A descriptio
 ## Using videoflo
 There are 6 executable scripts in videoflo that allow you to automate various aspects of video production from idea to publishing. The following is an overview of how those scripts fit into the video production workflow. While videoflo was designed specifically for tutorial-style videos with screen recordings that are destined for YouTube, the concepts here can be modified for other types of videos.
 
+<img width="910" alt="Screen Shot 2021-04-18 at 11 00 33 AM" src="https://user-images.githubusercontent.com/6558850/115155548-63064c00-a035-11eb-8100-73ab25173ed0.png">
+
 ### 1. Create the Structure for a New Video
 Use `new-vid.py` to create the basic directory structure to house your video files, assets, thumbnails, etc. The `--channel` or `-c` argument needs to match up with the `[channel]` section in your `settings.ini' file.
 
