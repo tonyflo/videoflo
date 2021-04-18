@@ -10,16 +10,16 @@ A series of Python scripts to help automate the YouTube video production workflo
 - [mac-tag](https://github.com/andrewp-as-is/mac-tag.py) which can be installed via pip
 
 ### macOS Tags
-A fundamental part of videoflo is the built-in tagging feature that macOS offers. This feature allows us to keep track where each project is in the video workflow.
+A fundamental part of videoflo is the built-in tagging feature that macOS offers. This feature allows us to keep track of where each project is in the video workflow.
 
-As a one-time setup, open a Finder window, go to Finder > Preferences, and add the folowing tags. The color doesn't matter too much, but make sure you have the exact text for each tag.
+As a one-time setup, open a Finder window, go to Finder > Preferences, and add the following tags. The colors don't matter too much, but make sure you have the exact text for each tag.
 
 <p align="center"><img width="489" alt="macos-tags" src="https://user-images.githubusercontent.com/6558850/115155129-5aad1180-a033-11eb-93eb-108a21fc6942.png"></p>
 
 ## Configuring Your Settings
-Configuration options can be specified in the `settings.ini` files. A description of configuration sections and settings are below, and an example can be found [here](settings.ini).
+Configuration options can be specified in the `settings.ini` file. A description of configuration sections and settings are below, and an example can be found [here](settings.ini).
 * `[main]`
-  * **api** The absolute path to the DaVinci Resolve scripting example directory. If you are unsure for your system, go to Help > Documentation > Developer. This only is availabe for DaVinci Resolve Studio. eg. /Library/Application Support/Blackmagic Design/DaVinci Resolve/Developer/Scripting/Examples/
+  * **api** The absolute path to the DaVinci Resolve scripting example directory. If you are unsure for your system, go to Help > Documentation > Developer. This only is available for DaVinci Resolve Studio. eg. /Library/Application Support/Blackmagic Design/DaVinci Resolve/Developer/Scripting/Examples/
   * **root_dir** The absolute path to the root directory where you keep all of your video project files. If you have multiple channels, you can organize them in their own section below. eg. /Volumes/vid/
 * `[video]`
   * **FrameRate** The frame rate that you want to export with eg. 24
