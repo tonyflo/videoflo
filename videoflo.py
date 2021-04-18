@@ -64,3 +64,11 @@ class VideoFlo():
         project_path = os.path.join(self.dir, channel['path'], project_name)
         return project_path
 
+    # get DaVinci project manager
+    def get_project_manager(self, resolve):
+        try:
+            project_manager = resolve.GetProjectManager()
+            return project_manager
+        except AttributeError:
+            print('DaVinci Resolve probably not open')
+            return None

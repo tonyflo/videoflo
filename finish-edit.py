@@ -5,22 +5,6 @@ import mac_tag # TODO not cross platform
 from videoflo import VideoFlo
 
 
-def get_project_manager(resolve):
-    try:
-        project_manager = resolve.GetProjectManager()
-        return project_manager
-    except AttributeError:
-        print('DaVinci Resolve probably not open')
-        return None
-
-# set render settings
-def set_render_settings(project, project_path):
-    render_settings = {
-        "TargetDir": project_path,
-        "CustomName": project.GetName(),
-    }
-    project.SetRenderSettings(render_settings)
-
 # export project file to project folder
 def export_project(project_manager, project_path, project_name):
     drp = '{}.drp'.format(project_name)
@@ -36,7 +20,7 @@ def update_tag(project_path):
 def go():
     flo = VideoFlo()
     resolve = flo.get_resolve()
-    project_manager = get_project_manager(resolve)
+    project_manager = flo.get_project_manager(resolve)
     project = project_manager.GetCurrentProject()
     if project is None:
         print('Could not get current DaVinci project')
@@ -49,8 +33,6 @@ def go():
         return
     project_path = flo.get_project_path(project_name, channel)
 
-    resolve.OpenPage('deliver')
-    set_render_settings(project, project_path)
     export_project(project_manager, project_path, project_name)
     update_tag(project_path)
 

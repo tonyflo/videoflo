@@ -22,10 +22,8 @@ def count_drps(child):
 def check_vids(tag, channel_path):
     count = 0
     warn = 0
-    for up in mac_tag.find([tag]):
+    for up in mac_tag.find([tag], [channel_path]):
         child = Path(up)
-        if not channel_path in child.parents:
-            continue
         print('Checking {}'.format(child))
         count = count + 1
 
