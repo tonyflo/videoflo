@@ -25,7 +25,7 @@ class VideoFlo():
     def get_channel(self, project_name, channel_arg=None):
         # first check to see if the channel argument was passed int
         if channel_arg is not None:
-            channel = self.config[args.channel]
+            channel = self.config[channel_arg]
             return channel
 
         # search all channel directories for the video
