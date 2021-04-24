@@ -1,3 +1,5 @@
+<p align="center"><img width="320" alt="videoflo logo" src="https://user-images.githubusercontent.com/6558850/115158541-81734400-a043-11eb-8097-a7ae42325ef0.png"></p>
+
 # videoflo
 A series of Python scripts to help automate the YouTube video production workflow in DaVinci Resolve.
 
@@ -8,16 +10,16 @@ A series of Python scripts to help automate the YouTube video production workflo
 - [mac-tag](https://github.com/andrewp-as-is/mac-tag.py) which can be installed via pip
 
 ### macOS Tags
-A fundamental part of videoflo is the built-in tagging feature that macOS offers. This feature allows us to keep track where each project is in the video workflow.
+A fundamental part of videoflo is the built-in tagging feature that macOS offers. This feature allows us to keep track of where each project is in the video workflow.
 
-As a one-time setup, open a Finder window, go to Finder > Preferences, and add the folowing tags. The color doesn't matter too much, but make sure you have the exact text for each tag.
+As a one-time setup, open a Finder window, go to Finder > Preferences, and add the following tags. The colors don't matter too much, but make sure you have the exact text for each tag.
 
-<img width="489" alt="macos-tags" src="https://user-images.githubusercontent.com/6558850/115155129-5aad1180-a033-11eb-93eb-108a21fc6942.png">
+<p align="center"><img width="489" alt="macos-tags" src="https://user-images.githubusercontent.com/6558850/115155129-5aad1180-a033-11eb-93eb-108a21fc6942.png"></p>
 
 ## Configuring Your Settings
-Configuration options can be specified in the `settings.ini` files. A description of configuration sections and settings are below, and an example can be found [here](settings.ini).
+Configuration options can be specified in the `settings.ini` file. A description of configuration sections and settings are below, and an example can be found [here](settings.ini).
 * `[main]`
-  * **api** The absolute path to the DaVinci Resolve scripting example directory. If you are unsure for your system, go to Help > Documentation > Developer. This only is availabe for DaVinci Resolve Studio. eg. /Library/Application Support/Blackmagic Design/DaVinci Resolve/Developer/Scripting/Examples/
+  * **api** The absolute path to the DaVinci Resolve scripting example directory. If you are unsure for your system, go to Help > Documentation > Developer. This only is available for DaVinci Resolve Studio. eg. /Library/Application Support/Blackmagic Design/DaVinci Resolve/Developer/Scripting/Examples/
   * **root_dir** The absolute path to the root directory where you keep all of your video project files. If you have multiple channels, you can organize them in their own section below. eg. /Volumes/vid/
 * `[video]`
   * **FrameRate** The frame rate that you want to export with eg. 24
@@ -33,7 +35,7 @@ Configuration options can be specified in the `settings.ini` files. A descriptio
 ## Using videoflo
 There are 6 executable scripts in videoflo that allow you to automate various aspects of video production from idea to publishing. The following is an overview of how those scripts fit into the video production workflow. While videoflo was designed specifically for tutorial-style videos with screen recordings that are destined for YouTube, the concepts here can be modified for other types of videos.
 
-<img width="910" alt="Screen Shot 2021-04-18 at 11 00 33 AM" src="https://user-images.githubusercontent.com/6558850/115155548-63064c00-a035-11eb-8100-73ab25173ed0.png">
+<p align="center"><img width="910" alt="Screen Shot 2021-04-18 at 11 00 33 AM" src="https://user-images.githubusercontent.com/6558850/115155548-63064c00-a035-11eb-8100-73ab25173ed0.png"></p>
 
 ### 1. Create the Structure for a New Video
 Use `new-vid.py` to create the basic directory structure to house your video files, assets, thumbnails, etc. The `--channel` or `-c` argument needs to match up with the `[channel]` section in your `settings.ini' file.
