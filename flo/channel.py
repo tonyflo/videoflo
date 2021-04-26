@@ -21,5 +21,6 @@ class Channel:
     # oauth2 file for the YouTube API which won't exist until login
     def _oauth2_setup(self, config):
         root_dir = config['main']['root_dir']
-        oauth2_file = 'oauth2-{}.json'.format(self.path_name)
+        oauth2_file = '.oauth2-{}.json'.format(self.path_name)
         self.oauth = os.path.join(root_dir, oauth2_file)
+
