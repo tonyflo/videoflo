@@ -28,10 +28,10 @@ def get_video_file(path):
     return video_file
 
 # loop over directories tagged as ready for upload and check for required files
-def get_upload_list(channel, trello):
+def get_upload_dict(channel, trello):
     print('Checking videos for {}'.format(channel.name))
     uploadable = trello.get_list('Upload', channel)
-    upload_list = []
+    upload_dict = {}
 
     count = 0
     warn = 0
@@ -75,25 +75,25 @@ def get_upload_list(channel, trello):
         warn = warn + 1 if not video.check_date() else warn
         warn = warn + 1 if not video.check_tags() else warn
 
-        upload_list.append(video)
+        upload_dict[card_id] = video
 
     if warn == 0 and count > 0:
-        return upload_list
+        return upload_dict
     elif count == 0:
         print('No videos ready for upload')
     else:
         print('{} problem(s) found'.format(warn))
-    return []
+    return {}
 
 # prepare uploads
-def do_uploads(upload_list, trello):
-    for video in upload_list:
+def do_uploads(upload_dict, trello):
+    for card_id, video in upload_dict.items():
         print('Starting upload for {}'.format(video.file))
         video_id = video.upload()
         if video_id is not None:
             update_tag('Backup', video.path)
             trello.move_card(video.idea, 'Scheduled')
-            # TODO: do something with video_id
+            trello.attach_links_to_card(card_id, video_id)
 
 def go():
     flo = VideoFlo()
@@ -101,8 +101,8 @@ def go():
     channel = Channel(flo.config, args.channel)
 
     trello = Trello()
-    upload_list = get_upload_list(channel, trello)
-    if len(upload_list) > 0:
-        do_uploads(upload_list, trello)
+    upload_dict = get_upload_dict(channel, trello)
+    if len(upload_dict) > 0:
+        do_uploads(upload_dict, trello)
 
 go()

@@ -42,16 +42,13 @@ class Video():
         if self.title is None or title_len < 0:
             status = False
             print('FIX: No title found')
-
-        if ' ' not in self.title:
+        elif ' ' not in self.title:
             status = False
             print('FIX: No spaces found in title: {}'.format(self.title))
-
-        if title_len < 10:
+        elif title_len < 10:
             status = False
             print('FIX: Very short title: {}'.format(self.title))
-
-        if title_len > 100:
+        elif title_len > 100:
             status = False
             print('FIX: Title over 100 characters for {}'.format(self.title))
 
@@ -60,12 +57,18 @@ class Video():
     # check tags against YouTube limits
     # TODO: check for duplicate tags
     def check_tags(self):
+        if self.tags is None or len(self.tags) == 0:
+            print('FIX: No tags found')
+            return False
+
+        # filter out tags that are too long or short
         tags = [t for t in self.tags if 2 <= len(t) <= 100]
         diff = set(self.tags) - set(tags)
         if len(diff) > 0:
             removed = ','.join(diff)
             print('WARN: The following tags were removed: {}'.format(removed))
 
+        # check again in case the filter removed them all
         if tags is None or len(tags) == 0:
             print('FIX: No tags found')
             return False
@@ -84,8 +87,7 @@ class Video():
         if self.description is None or description_len == 0:
             status = False
             print('FIX: No description found')
-
-        if description_len < 10:
+        elif description_len < 10:
             status = False
             print('FIX: Very short description: {}'.format(self.description))
 

@@ -12,9 +12,9 @@ from flo.const import cardfile
 class Trello():
 
     def __init__(self):
-        self.url = 'https://trello.com/1'
+        self.url = 'https://trello.com/1' # TODO: use this in this file
         self.config = configparser.ConfigParser()
-        self.config.read('settings.ini')
+        self.config.read('settings.ini') # TODO: put in const file
         self.key = self.config.get('trello', 'key')
         try:
             self.token = self.config.get('trello', 'token')
@@ -279,3 +279,22 @@ class Trello():
                 return path
 
         return None
+
+
+    def attach_links_to_card(self, card_id, video_id):
+        url = 'https://api.trello.com/1/cards/{}/attachments'.format(card_id)
+        attachments = {
+            'YouTube Studio': 'https://studio.youtube.com/video/{}/edit',
+            'YouTube video': 'https://youtu.be/{}'
+        }
+        for name, link in attachments.items():
+            u = link.format(video_id)
+            params = self.query
+            params['name'] = name
+            params['url'] = u
+            response = self._make_request('POST', url, params)
+            if 'id' in response.json():
+                continue
+
+            print('Error when attaching "{}" link to card'.format(u))
+
