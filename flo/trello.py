@@ -6,15 +6,15 @@ import requests
 import webbrowser
 import configparser
 from pathlib import Path
-from flo.const import cardfile
+from flo.const import cardfile, settingsfile
 
 
 class Trello():
 
     def __init__(self):
-        self.url = 'https://trello.com/1' # TODO: use this in this file
+        self.url = 'https://api.trello.com/1/'
         self.config = configparser.ConfigParser()
-        self.config.read('settings.ini') # TODO: put in const file
+        self.config.read(settingsfile)
         self.key = self.config.get('trello', 'key')
         try:
             self.token = self.config.get('trello', 'token')
@@ -46,7 +46,7 @@ class Trello():
             return False
 
         self.config.set('trello', 'token', token)
-        with open('settings.ini', 'w') as configfile:
+        with open(settingsfile, 'w') as configfile:
             self.config.write(configfile)
 
         self.token = token
@@ -60,7 +60,7 @@ class Trello():
             return False
 
         self.config.set(channel.id, 'board_id', board_id)
-        with open('settings.ini', 'w') as configfile:
+        with open(settingsfile, 'w') as configfile:
             self.config.write(configfile)
 
         self.board_id= board_id
@@ -84,7 +84,7 @@ class Trello():
             # get a token from trello via a web browser
             params = {
                 'k': self.key,
-                'u': '{}/authorize'.format(self.url),
+                'u': 'https://trello.com/1/authorize',
                 'n': 'Videoflo',
                 'e': 'never',
                 's': 'read,write',
@@ -134,7 +134,7 @@ class Trello():
         except configparser.NoOptionError:
             pass
 
-        url = 'https://api.trello.com/1/members/me/boards?fields=name&filter=open'
+        url = self.url + 'members/me/boards?fields=name&filter=open'
         params = self.query
         response = self._make_request('GET', url, params)
         if response is None:
@@ -156,7 +156,7 @@ class Trello():
 
     def _get_list(self, board_id, name):
         list_id = None
-        url = "https://api.trello.com/1/boards/{}/lists".format(board_id)
+        url = self.url + 'boards/{}/lists'.format(board_id)
 
         params = self.query
         params['filter'] = 'open'
@@ -191,7 +191,7 @@ class Trello():
             print('Unable to determine the id for this Trello card')
             return False
 
-        url = 'https://api.trello.com/1/cards/{}'.format(card_id)
+        url = self.url + 'cards/{}'.format(card_id)
         params = self.query
         params['idList'] = destination_list_id
         response = self._make_request('PUT', url, params)
@@ -204,7 +204,7 @@ class Trello():
         return True
 
     def _create_checklist(self, card_id):
-        url = 'https://api.trello.com/1/cards/{}/checklists'.format(card_id)
+        url = self.url + 'cards/{}/checklists'.format(card_id)
         params = self.query
         params['name'] = 'tags'
         response = self._make_request('POST', url, params)
@@ -213,7 +213,7 @@ class Trello():
             return False
 
     def _create_card(self, list_id, idea):
-        url = 'https://api.trello.com/1/cards'
+        url = self.url + 'cards'
         params = self.query
         params['idList'] = list_id
         params['name'] = idea.name
@@ -257,7 +257,7 @@ class Trello():
         checklist_data = None
         # if there are multiple checklists, need to find the tags one
         for cid in checklist_ids:
-            url = 'https://api.trello.com/1/checklists/{}'.format(cid)
+            url = self.url + 'checklists/{}'.format(cid)
 
             params = self.query
             params['checkItem_fields'] = 'name,state'
@@ -286,7 +286,7 @@ class Trello():
         if list_id is None:
             return False
 
-        url = 'https://api.trello.com/1/lists/{}/cards'.format(list_id)
+        url = self.url + 'lists/{}/cards'.format(list_id)
         params = self.query
         response = self._make_request('GET', url, params)
 
@@ -305,7 +305,7 @@ class Trello():
 
 
     def attach_links_to_card(self, card_id, video_id):
-        url = 'https://api.trello.com/1/cards/{}/attachments'.format(card_id)
+        url = self.url + 'cards/{}/attachments'.format(card_id)
         attachments = {
             'YouTube Studio': 'https://studio.youtube.com/video/{}/edit',
             'YouTube video': 'https://youtu.be/{}'

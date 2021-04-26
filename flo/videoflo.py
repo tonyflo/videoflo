@@ -1,7 +1,10 @@
+# Class to help with command line arguments and reading the config file
+
 import os
 import argparse
 import configparser
 from flo.channel import Channel
+from flo.const import settingsfile
 
 
 class VideoFlo():
@@ -9,7 +12,7 @@ class VideoFlo():
     def __init__(self):
         # read settings file
         config = configparser.ConfigParser()
-        config.read('settings.ini')
+        config.read(settingsfile)
         self.config = config
         self.root= config['main']['root_dir']
         self.channels = [Channel(self.config, c) for c in self._get_channels()]
