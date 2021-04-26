@@ -1,6 +1,7 @@
 # Create a DaVinci Resolve project
 
 from flo.idea import Idea
+from flo.trello import Trello
 from flo.davinci import Davinci
 from flo.videoflo import VideoFlo
 
@@ -27,5 +28,8 @@ def go():
     davinci.import_timeline()
     davinci.import_files()
     davinci.workspace_setup()
+
+    trello = Trello()
+    trello.move_card(idea, 'Edit')
 
 go()

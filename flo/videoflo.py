@@ -15,7 +15,7 @@ class VideoFlo():
         self.channels = [Channel(self.config, c) for c in self._get_channels()]
 
     def _get_channels(self):
-        return set(self.config.sections()) - set(['main'])
+        return set(self.config.sections()) - set(['main', 'trello'])
 
     def _add_channel_arg(self, parser):
         parser.add_argument('-c', '--channel',

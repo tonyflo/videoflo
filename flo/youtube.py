@@ -62,8 +62,6 @@ https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
 """ % os.path.abspath(os.path.join(os.path.dirname(__file__),
                                    CLIENT_SECRETS_FILE))
 
-VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
-
 # authenticate with Google
 def get_authenticated_service(video):
   flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE,
@@ -92,8 +90,8 @@ def do_video_upload(youtube, video):
       categoryId=video.category,
     ),
     status=dict(
-      privacyStatus="Private", # TODO: make scheduled
-      #publishAt="", # TODO
+      privacyStatus='private',
+      publishAt=video.publish_at,
     )
   )
 

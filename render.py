@@ -2,21 +2,29 @@
 
 import os
 from flo.idea import Idea
+from flo.trello import Trello
 from flo.davinci import Davinci
 from flo.channel import Channel
 from flo.videoflo import VideoFlo
-from flo.mactag import get_renderable, update_tag
+from flo.mactag import update_tag
 
 
 # loop over videos ready to be rendered
-def loop(channel, davinci):
-    renderable = get_renderable(channel.path)
+def loop(channel, davinci, trello):
+    renderable = trello.get_list('Render', channel)
     total = len(renderable)
     print('Rendering {} videos for {}'.format(total, channel.name))
 
     counter = 0
     finished = 0
-    for path in renderable:
+    for item in renderable:
+        card_id = item['id']
+        name = item['name']
+        path = trello.find_path_for_id(card_id, channel)
+        if path is None:
+            print('Could not find local path for {}'.format(name))
+            continue
+
         counter = counter + 1
         project_name = os.path.basename(path)
         idea = Idea()
@@ -31,6 +39,8 @@ def loop(channel, davinci):
         if success:
             update_tag('Upload', idea.path)
             finished = finished + 1
+
+            trello.move_card(idea, 'Upload')
 
     if total == 0:
         print('Nothing to render')
@@ -47,6 +57,8 @@ def go():
     args = flo.get_channel_arguments()
     channel = Channel(flo.config, args.channel)
 
-    loop(channel, davinci)
+    trello = Trello()
+
+    loop(channel, davinci, trello)
 
 go()

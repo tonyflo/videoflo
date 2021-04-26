@@ -1,54 +1,34 @@
 # YouTube video class
 
 import os
+from datetime import datetime
 from flo import youtube
-from flo.const import metadata
 
 
 class Video():
 
-    def __init__(self, path, filename, channel, thumbnail):
+    def __init__(self, path, filename, channel, metadata, thumbnail, idea):
         self.path = path
         self.file = filename
         self.video = os.path.join(self.path, self.file)
         self.thumbnail = thumbnail
         self.channel = channel
+        self.idea = idea
         self.category = 26 # TODO: hardcoded as How To & Style
-        self.set_title()
-        self.set_description()
-        self.set_tags()
+        self.title = metadata['title']
+        self.description = metadata['description']
+        self.publish_at = self._set_publish_time(metadata['scheduled'])
+        self.tags = metadata['tags']
 
-    # set the title of the video (only reads first line of file)
-    def set_title(self):
-        title_file = metadata['title']
-        title_path = os.path.join(self.path, title_file)
-        with open(title_path) as f:
-            title = f.readline().strip()
-            self.title = title
+    def _set_publish_time(self, publish_at):
+        if publish_at is None:
+            return None
 
-    # set the description of the video
-    def set_description(self):
-        description_file = metadata['description']
-        description_path = os.path.join(self.path, description_file)
-        with open(description_path) as f:
-            description = f.read().strip()
-            self.description = description
+        dt = datetime.strptime(publish_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+        return dt
 
-    # set the tags for the video
-    def set_tags(self):
-        tags_file = metadata['tags']
-        tags_path = os.path.join(self.path, tags_file)
-        with open(tags_path) as f:
-            # read each line into a list element
-            values = f.read().splitlines()
-            # remove extra whitespace between characters and drop tags less
-            # than 2 and greater than 100 characters
-            tags = [' '.join(v.split()).strip(',') for v in values if 2 <= len(v) <= 100]
-            self.tags = tags
-
-    # get the lenght of the tags
-    def get_tags_len(self):
-            tags = self.tags
+    # get the length of the tags according to how YouTube counts them
+    def _get_tags_len(self, tags):
             # each tag over 1 has a hidden comma and any tag with whitespace
             # has hidden quotes, so count these too
             length = sum([len(t)+3 if ' ' in t else len(t)+1 for t in tags])-1
@@ -57,35 +37,71 @@ class Video():
     # check for a good title
     # TODO: check for title longer than 70 due to truncation?
     def check_title(self):
-        if self.title is None or len(self.title) == 0:
-            print('FIX: No title found for {}'.format(self.file))
-            return False
+        status = True
+        title_len = len(self.title)
+        if self.title is None or title_len < 0:
+            status = False
+            print('FIX: No title found')
 
-        if len(self.title) > 100:
+        if ' ' not in self.title:
+            status = False
+            print('FIX: No spaces found in title: {}'.format(self.title))
+
+        if title_len < 10:
+            status = False
+            print('FIX: Very short title: {}'.format(self.title))
+
+        if title_len > 100:
+            status = False
             print('FIX: Title over 100 characters for {}'.format(self.title))
-            return False
 
-        return True
+        return status
 
     # check tags against YouTube limits
     # TODO: check for duplicate tags
     def check_tags(self):
-        if self.tags is None or len(self.tags) == 0:
-            print('FIX: No tags found for {}'.format(self.file))
+        tags = [t for t in self.tags if 2 <= len(t) <= 100]
+        diff = set(self.tags) - set(tags)
+        if len(diff) > 0:
+            removed = ','.join(diff)
+            print('WARN: The following tags were removed: {}'.format(removed))
+
+        if tags is None or len(tags) == 0:
+            print('FIX: No tags found')
             return False
 
-        if self.get_tags_len() > 500:
-            print('FIX: Tags for {} over 500 characters.'.format(self.file))
+        if self._get_tags_len(tags) > 500:
+            print('FIX: Tags over 500 characters')
             return False
 
+        self.tags = tags
         return True
 
     # check for description
     def check_description(self):
-        if self.description is None or len(self.description) == 0:
-            print('FIX: No description found for {}'.format(self.file))
+        status = True
+        description_len = len(self.description)
+        if self.description is None or description_len == 0:
+            status = False
+            print('FIX: No description found')
+
+        if description_len < 10:
+            status = False
+            print('FIX: Very short description: {}'.format(self.description))
+
+        return status
+
+    # check for a valid scheduled date and time
+    def check_date(self):
+        if self.publish_at is None:
+            print('FIX: No scheduled date')
             return False
 
+        if datetime.now() > self.publish_at:
+            print('FIX: Scheduled date of {} is in the past'.format(dt))
+            return False
+
+        self.publish_at = self.publish_at.isoformat()
         return True
 
     # upload video to YouTube and if successful, return the video id

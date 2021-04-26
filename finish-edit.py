@@ -1,6 +1,7 @@
 # Export a DaVinci project and update the video directory tag accordingly
 
 from flo.idea import Idea
+from flo.trello import Trello
 from flo.davinci import Davinci
 from flo.videoflo import VideoFlo
 from flo.mactag import update_tag
@@ -30,6 +31,9 @@ def go():
 
     davinci.export_project(idea)
     update_tag('Render', idea.path)
+
+    trello = Trello()
+    trello.move_card(idea, 'Render')
 
 go()
 

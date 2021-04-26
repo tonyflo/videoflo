@@ -2,6 +2,7 @@
 
 from flo.idea import Idea
 from flo.videoflo import VideoFlo
+from flo.trello import Trello
 from flo.mactag import add_tag
 
 
@@ -15,6 +16,9 @@ def go():
 
     idea.make_files()
     idea.make_directories()
+
+    trello = Trello()
+    trello.make_card(idea)
 
     add_tag('Script', idea.path, do_open=True)
 
