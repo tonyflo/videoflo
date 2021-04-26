@@ -6,6 +6,7 @@ import requests
 import webbrowser
 import configparser
 from pathlib import Path
+from flo.const import cardfile
 
 
 class Trello():
@@ -68,7 +69,7 @@ class Trello():
 
     # save the card id to the directory for this idea
     def _save_card_id(self, card, idea):
-        card_file = os.path.join(idea.path, 'card.txt')
+        card_file = os.path.join(idea.path, cardfile)
         with open(card_file, 'a') as f:
             f.write(card['id'])
 
@@ -147,7 +148,7 @@ class Trello():
 
     def _get_card(self, idea):
         card = None
-        card_file = os.path.join(idea.path, 'card.txt')
+        card_file = os.path.join(idea.path, cardfile)
         with open(card_file) as f:
             card_id = f.readline().strip()
 
@@ -170,7 +171,7 @@ class Trello():
             list_id = lst['id']
 
         if list_id is None:
-            print('Unable to find {} board'.format(name))
+            print('Unable to find {} board. Please create it.'.format(name))
 
         return list_id
 
@@ -187,7 +188,7 @@ class Trello():
 
         card_id = self._get_card(idea)
         if card_id is None or card_id == '':
-            print('Unable to read card.txt file')
+            print('Unable to determine the id for this Trello card')
             return False
 
         url = 'https://api.trello.com/1/cards/{}'.format(card_id)
@@ -227,6 +228,7 @@ class Trello():
             return False
 
         self._save_card_id(card, idea)
+        return True
 
     def get_tags_from_checklist(self, checklist_ids):
         checklist_data = None
@@ -269,7 +271,7 @@ class Trello():
 
     def find_path_for_id(self, card_id, channel):
         channel_path = Path(channel.path)
-        for card_file in list(channel_path.rglob('card.txt')):
+        for card_file in list(channel_path.rglob(cardfile)):
             with open(card_file) as f:
                 if card_id != f.read().strip():
                     continue

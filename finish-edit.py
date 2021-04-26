@@ -29,11 +29,13 @@ def go():
         print('Directory for {} not found'.format(project_name))
         return
 
+    trello = Trello()
+    success = trello.move_card(idea, 'Render')
+    if not success:
+        return
+
     davinci.export_project(idea)
     update_tag('Render', idea.path)
-
-    trello = Trello()
-    trello.move_card(idea, 'Render')
 
 go()
 

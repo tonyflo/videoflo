@@ -2,6 +2,7 @@
 
 import os
 from flo.channel import Channel
+from flo.const import cardfile
 
 
 class Idea():
@@ -52,7 +53,7 @@ class Idea():
 
     # create files for the idea
     def make_files(self):
-        file_list = ['notes.txt', 'card.txt']
+        file_list = ['notes.txt', cardfile]
         for f in file_list:
             new_file = os.path.join(self.path, f)
             open(new_file, 'a').close()

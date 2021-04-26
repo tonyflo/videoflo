@@ -21,6 +21,11 @@ def go():
     if davinci.project_manager is None:
         return
 
+    trello = Trello()
+    success = trello.move_card(idea, 'Edit')
+    if not success:
+        return
+
     davinci.create_project(idea)
     if davinci.project is None:
         return
@@ -28,8 +33,5 @@ def go():
     davinci.import_timeline()
     davinci.import_files()
     davinci.workspace_setup()
-
-    trello = Trello()
-    trello.move_card(idea, 'Edit')
 
 go()

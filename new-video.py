@@ -14,11 +14,14 @@ def go():
     if idea_directory is None:
         return
 
-    idea.make_files()
-    idea.make_directories()
 
     trello = Trello()
-    trello.make_card(idea)
+    success = trello.make_card(idea)
+    if not success:
+        return
+
+    idea.make_files()
+    idea.make_directories()
 
     add_tag('Script', idea.path, do_open=True)
 

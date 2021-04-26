@@ -38,9 +38,8 @@ def loop(channel, davinci, trello):
         success = davinci.render_video()
         if success:
             update_tag('Upload', idea.path)
-            finished = finished + 1
-
-            trello.move_card(idea, 'Upload')
+            success = trello.move_card(idea, 'Upload')
+        finished = finished + 1 if success else finished
 
     if total == 0:
         print('Nothing to render')
