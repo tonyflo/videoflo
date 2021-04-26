@@ -68,10 +68,10 @@ class Trello():
         return True
 
     # save the card id to the directory for this idea
-    def _save_card_id(self, card, idea):
+    def _save_card_id(self, card_id, idea):
         card_file = os.path.join(idea.path, cardfile)
         with open(card_file, 'a') as f:
-            f.write(card['id'])
+            f.write(card_id)
 
     # either get an existing token or request a new one from trello
     def _authorize(self):
@@ -203,8 +203,33 @@ class Trello():
 
         return True
 
-    def make_card(self, idea):
+    def _create_checklist(self, card_id):
+        url = 'https://api.trello.com/1/cards/{}/checklists'.format(card_id)
+        params = self.query
+        params['name'] = 'tags'
+        response = self._make_request('POST', url, params)
+        if response is None:
+            print('Unable to create empty tags checklist')
+            return False
+
+    def _create_card(self, list_id, idea):
         url = 'https://api.trello.com/1/cards'
+        params = self.query
+        params['idList'] = list_id
+        params['name'] = idea.name
+        params['pos'] = 'top'
+        response = self._make_request('POST', url, params)
+        if response is None:
+            return None
+
+        card = response.json()
+        if 'id' not in card:
+            print('Something went wrong when creating the card')
+            return None
+
+        return card
+
+    def make_card(self, idea):
         channel = idea.channel
         board_id = self._get_board(channel)
         if board_id is None:
@@ -214,20 +239,18 @@ class Trello():
         if list_id is None:
             return False
 
-        params = self.query
-        params['idList'] = list_id
-        params['name'] = idea.name
-        params['pos'] = 'top'
-        response = self._make_request('POST', url, params)
-        if response is None:
+        card = self._create_card(list_id, idea)
+        if card is None:
             return False
 
-        card = response.json()
-        if 'id' not in card:
-            print('Something went wrong when creating the card')
+        card_id = card['id']
+        if card_id is None or card_id == '':
+            print('Invalid card id')
             return False
 
-        self._save_card_id(card, idea)
+        self._create_checklist(card_id)
+        self._save_card_id(card_id, idea)
+
         return True
 
     def get_tags_from_checklist(self, checklist_ids):
