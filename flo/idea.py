@@ -60,7 +60,7 @@ class Idea():
 
     # create directories for the idea
     def make_directories(self):
-        for folder in ['camera', 'screen']:
+        for folder in ['camera']:
             new_folder = os.path.join(self.path, folder)
             os.mkdir(new_folder)
 
