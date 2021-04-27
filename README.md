@@ -21,7 +21,7 @@ Open the [settings.ini](settings.ini) file and provide the full path to where yo
 root_dir = /Volumes/vid/channels/
 ```
 
-If you have multiple YouTube channels, it is recommended to create subdirectories for each channel. For me, I have 3 channels, so the folowing directories exist on my system.
+If you have multiple YouTube channels, it is recommended to create subdirectories for each channel. For me, I have 3 channels, so the following directories exist on my system.
 * `/Volumes/vid/channels/tony-teaches-tech/`
 * `/Volumes/vid/channels/tony-florida/`
 * `/Volumes/vid/channels/thrifty-tony/`
@@ -116,7 +116,7 @@ After filming each video, use `done-filming.py` to update the state of the video
 python done-filming.py davinci-resolve-scripting -c ttt
 ```
 
-If you have any screen recordings, this script will move these to a `screen` folder in the root of your project directory. If you will have screen recordings, please specify the path where your screen recordings are saved in your [settings.ini](settings.ini). Notice how the `screen_recordings` settings below uses an asterisk as a wildcard charater to match any .mov files with a filename that starts with "Screen Recording".
+If you have any screen recordings, this script will move these to a `screen` folder in the root of your project directory. If you will have screen recordings, please specify the path where your screen recordings are saved in your [settings.ini](settings.ini). Notice how the `screen_recordings` settings below uses an asterisk as a wildcard character to match any .mov files with a filename that starts with "Screen Recording".
 
 ```
 [main]
@@ -144,7 +144,7 @@ _*NOTE:*_ It's very important that you have DaVinci Resolve open before executin
 The Trello card for this video will be moved to the **Edit** board indicating the the video is in the edit phase. If using Mac, this directory will be tagged with a **Edit** tag.
 
 ### 5. Finish the Edit
-When you're satisified with the edit, use `finish-edit.py` to export the DaVinci Resolve project as a .drp file to the root of your project directory.
+When you're satisfied with the edit, use `finish-edit.py` to export the DaVinci Resolve project as a .drp file to the root of your project directory.
 
 ```
 python finish-edit.py davinci-resolve-scripting
@@ -174,7 +174,7 @@ After each video is rendered, the Trello card for that video will be moved to th
 _*NOTE*_: If you would like your video file to be named something else, this is a good time to change the name of the .mov file. It's understood that YouTube uses the filename of your video file as an additional indicator to determine what your video is about, so it's important for SEO purposes to name it accurately and not video1_final.mov for example.
 
 ### 7. Upload to YouTube
-Use the `upload.py` script to upload all rendered videos for a particualr channel to YouTube.
+Use the `upload.py` script to upload all rendered videos for a particular channel to YouTube.
 
 ```
 python3 upload.py -c ttt
