@@ -12,15 +12,13 @@ from flo.mactag import update_tag
 # copy screen recordings to this video project's screen directory
 def copy_screen_recordings(flo, idea):
     try:
-        screen_recordings_path = flo.config['main']['screen_recordings_dir']
+        screen_recordings = flo.config['main']['screen_recordings']
     except KeyError:
-        # assume that the user does not have screen recordings and silently return
+        # assume the user does not have screen recordings and silently return
         return
 
-    file_pattern = 'Screen Recording*.mov'
-    screen_recordings = glob(os.path.join(screen_recordings_path, file_pattern))
-
     # check to see if there are even screen recordings to copy
+    screen_recordings = glob(screen_recordings)
     if len(screen_recordings) == 0:
         return
 
@@ -46,10 +44,10 @@ def go():
     copy_screen_recordings(flo, idea)
 
     trello = Trello()
-    success = trello.move_card(idea, 'Import')
+    success = trello.move_card(idea, 'Edit')
     if not success:
         return
 
-    update_tag('Import', idea.path)
+    update_tag('Edit', idea.path)
 
 go()

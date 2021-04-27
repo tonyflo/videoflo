@@ -5,6 +5,7 @@ from flo.trello import Trello
 from flo.davinci import Davinci
 from flo.videoflo import VideoFlo
 
+
 def go():
     flo = VideoFlo()
     idea = Idea()

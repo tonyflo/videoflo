@@ -14,7 +14,6 @@ def go():
     if idea_directory is None:
         return
 
-
     trello = Trello()
     success = trello.make_card(idea)
     if not success:
