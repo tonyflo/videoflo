@@ -3,6 +3,8 @@
 # videoflo
 A series of Python scripts to help automate the YouTube video production workflow in DaVinci Resolve.
 
+By leveraging the Trello API and the YouTube API, videoflo not only will eliminate many mundane aspects of video production, but also keep your projects organized throughout the entire process.
+
 ## Installation
 
 ### Requirements
@@ -54,7 +56,7 @@ A description of each configuration option follows.
 * `height` (required) The height that you export your videos
 
 ### Trello
-To maintain where each video project is in the video production workflow, videoflo integrates with the project management software [Trello](https://trello.com/tonyflorida/recommend), so you'll need a free account if you don't have one.
+To track where each video project is in the video production workflow, videoflo integrates with the project management software [Trello](https://trello.com/tonyflorida/recommend), so you'll need a free account if you don't have one.
 
 In Trello, create a board for your YouTube channel with the following lists:
 1. Script
@@ -63,6 +65,8 @@ In Trello, create a board for your YouTube channel with the following lists:
 4. Render
 5. Upload
 6. Scheduled
+
+_*NOTE*_: Please do not manually move cards between lists on your Trello boards... videoflo will manage card movement for you.
 
 ### MacOS Tags
 If you are using a Mac computer, videoflo will tag your video project directories according to their status in the production workflow.
@@ -146,8 +150,6 @@ python edit.py davinci-resolve-scripting -c ttt
 ```
 
 This script will also import an optional timeline file for the channel that you specified in [settings.ini](settings.ini).
-
-The Trello card for this video will be moved to the **Edit** board indicating the the video is in the edit phase. If using Mac, this directory will be tagged with a **Edit** tag.
 
 ### 5. Finish the Edit
 When you're satisfied with the edit, use `finish-edit.py` to export the DaVinci Resolve project as a .drp file to the root of your project directory.
