@@ -47,7 +47,7 @@ class VideoFlo():
         num_found = 0
         the_channel = None
         for channel in self.channels:
-            project_path = os.path.join(channel.path, project_name)
+            project_path = os.path.join(channel.path, project_name, '')
             if not os.path.exists(project_path):
                 continue
 
@@ -57,6 +57,6 @@ class VideoFlo():
         if num_found == 1:
             return the_channel
 
-        print('Could not find channel for this project.')
+        print('Found {} projects with name {}'.format(num_found, project_name))
         return None
 
