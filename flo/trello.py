@@ -68,7 +68,7 @@ class Trello():
         return True
 
     # save the card id to the directory for this idea
-    def _save_card_id(self, card_id, idea):
+    def save_card(self, card_id, idea):
         card_file = os.path.join(idea.path, cardfile)
         with open(card_file, 'a') as f:
             f.write(card_id)
@@ -233,25 +233,24 @@ class Trello():
         channel = idea.channel
         board_id = self._get_board(channel)
         if board_id is None:
-            return False
+            return None
 
         list_id = self._get_list(board_id, 'Script')
         if list_id is None:
-            return False
+            return None
 
         card = self._create_card(list_id, idea)
         if card is None:
-            return False
+            return None
 
         card_id = card['id']
         if card_id is None or card_id == '':
             print('Invalid card id')
-            return False
+            return None
 
         self._create_checklist(card_id)
-        self._save_card_id(card_id, idea)
 
-        return True
+        return card_id
 
     def get_tags_from_checklist(self, checklist_ids):
         checklist_data = None
@@ -320,4 +319,9 @@ class Trello():
                 continue
 
             print('Error when attaching "{}" link to card'.format(u))
+
+    def delete_card(self, card_id):
+        url = self.url + 'cards/{}'.format(card_id)
+        params = self.query
+        response = self._make_request('DELETE', url, params)
 
