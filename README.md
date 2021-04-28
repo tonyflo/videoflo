@@ -26,7 +26,15 @@ If you have multiple YouTube channels, it is recommended to create subdirectorie
 * `/Volumes/vid/channels/tony-florida/`
 * `/Volumes/vid/channels/thrifty-tony/`
 
-For each one of your channels, add a section in your [settings.ini](settings.ini) file. You will need at least one section. The snippet below is the section for [Tony Teaches Tech](https://www.youtube.com/channel/UCWPJwoVXJhv0-ucr3pUs1dA)
+If you will have screen recordings, please specify the path where your screen recordings are saved. Notice how the `screen_recordings` settings below uses an asterisk as a wildcard character to match any .mov files with a filename that starts with "Screen Recording".
+
+```
+[main]
+...
+screen_recordings = /Users/tonyflorida/Desktop/Screen Recording*.mov
+```
+
+For each one of your channels, add a section in your [settings.ini](settings.ini) file. You will need at least one section, but can have as many sections as you have channels. Pick a short, memorable name for your section name as you will use this name to distinguish your channel on the command line. In the snippet below, the section for [Tony Teaches Tech](https://www.youtube.com/channel/UCWPJwoVXJhv0-ucr3pUs1dA) and I named my section `[ttt]`.
 ```
 [ttt]
 name = Tony Teaches Tech
@@ -39,14 +47,14 @@ height = 2160
 
 A description of each configuration option follows.
 * `name` (required) The proper name of your YouTube channel
-* `path` (required) The subdirectory under `root_dir` where your video projects will exist during production
-* `timeline` (optional) The full path to a DaVinci Resolve timeline file that will act as a template for this channel's videos
+* `path` (required) The subdirectory under `root_dir` where your video projects will exist
+* `timeline` (optional) The full path to a DaVinci Resolve timeline file that will act as a template for this channel's videos. Your timeline might contain an intro or outro that you use across all videos on your channel. Starting in DaVinci Resolve 17, you can export a timeline by going to File > Export > Timeline.
 * `framerate` (required) The framerate that you export your videos
 * `width` (required) The width that you export your videos
 * `height` (required) The height that you export your videos
 
 ### Trello
-To maintain where each video project is in the video production workflow, videoflo integrate with the project management software [Trello](https://trello.com/tonyflorida/recommend), so you'll need a free account if you don't have one.
+To maintain where each video project is in the video production workflow, videoflo integrates with the project management software [Trello](https://trello.com/tonyflorida/recommend), so you'll need a free account if you don't have one.
 
 In Trello, create a board for your YouTube channel with the following lists:
 1. Script
@@ -76,15 +84,21 @@ There are 7 Python scripts in videoflo that allow you to automate various aspect
 The following is an overview of how those scripts fit into the video production workflow.
 
 ### 1. Create the Directory Structure for Your New Video Idea
-Use `new-vid.py` to create the basic directory structure to house your video files, assets, thumbnails, etc. The `--channel` or `-c` argument needs to match up with the channel section in your [settings.ini](settings.ini) file.
+At the inception of an idea for a video, use `new-vid.py` to create the basic directory structure to house your future video files, assets, thumbnails, etc. The `--channel` or `-c` argument needs to match up with the channel section in your [settings.ini](settings.ini) file.
 
 ```
-python new-vid.py davinci-resolve-scripting -c ttt
+python new-video.py davinci-resolve-scripting -c ttt
 ```
 
-Based on the configuration setting example above, this will create the following directory for your video project `/Volumes/vid/channel/tony-teaches-tech/davinci-resolve-scripting`. If using Mac, this directory will be tagged with a **Script** tag.
+The first time you do this, you will need to authorize videoflo to access your Trello account. Click on allow and copy the token into your terminal window.
 
-In this directory, a `camera` subdirectories will be created. This is where you'll copy your camera's video file for this project.
+Additionally, the first time you interact with each of your channels, you'll be asked to select the Trello board associated with your channel.
+
+<p align="center"><img width="489" alt="macos-tags" src="https://user-images.githubusercontent.com/6558850/116331767-4b416d00-a785-11eb-878a-984872aa13c7.png"></p>
+
+Based on the configuration setting example above, this will create the following directory for your video project `/Volumes/vid/channels/tony-teaches-tech/davinci-resolve-scripting`. If using Mac, this directory will be tagged with a **Script** tag.
+
+In this directory, a `camera` subdirectory will be created. This is where you will eventually copy your camera's video file for this project.
 
 This will also create an empty `notes.txt` file in this directory. You can use this as a place to put an outline for your video or other relevant notes.
 
@@ -93,7 +107,7 @@ Additionally, a new card will be added to the Script list in Trello.
 ### 2. Research and Plan
 With an idea in your head, it's best practice to do some keyword research for your video topic. This will not only help you determine the title and description for your video, but also point you in the right direction for general research on the topic.
 
-In Trello, put the title and description of your YouTube video as the title and description of the new card. Additionally, put the tags for your keyword research in the tags checklist on the card.
+In Trello, put the title and description of your YouTube video as the title and description of the new card. Additionally, put the tags for your keyword research in the tags checklist on the card. If you don't have all of this information yet, that's okay. You can add this information anytime before uploading; however, it's highly recommended that you put some serious thought into this as early as possible.
 
 <p align="center"><img width="489" alt="macos-tags" src="https://user-images.githubusercontent.com/6558850/116171607-f0910e00-a6bd-11eb-97ea-ae265bce0b36.png"></p>
 
@@ -116,30 +130,22 @@ After filming each video, use `done-filming.py` to update the state of the video
 python done-filming.py davinci-resolve-scripting -c ttt
 ```
 
-If you have any screen recordings, this script will move these to a `screen` folder in the root of your project directory. If you will have screen recordings, please specify the path where your screen recordings are saved in your [settings.ini](settings.ini). Notice how the `screen_recordings` settings below uses an asterisk as a wildcard character to match any .mov files with a filename that starts with "Screen Recording".
-
-```
-[main]
-...
-screen_recordings = /Users/tonyflorida/Desktop/Screen Recording*.mov
-```
+If you specified a location for screen recordings in [settings.ini](settings.ini), this script will move these to a `screen` folder in the root of your project directory.
 
 The Trello card for this video will be moved to the **Edit** board indicating that the video is ready to be edited. If using Mac, this directory will be tagged with a **Edit** tag.
 
 ### 4. Edit the Video
 Use `edit.py` to create a DaVinci Resolve project. This will import all media files from this project's directory into the Media Pool.
 
-_*Note*_: You'll need to manually copy your camera's video files from your SD card into the `camera` subdirectory for each video project.
+_*Note*_: You'll need to manually copy your camera's video files from your SD card into the `camera` subdirectory for each video project before executing this script.
 
-This will also import an optional timeline file for the channel as specified in [settings.ini](settings.ini). Your timeline might contain an intro or outro that you use across all videos on your channel. Starting in DaVinci Resolve 17, you can export a timeline by going to File > Export > Timeline.
-
-This script will also set your render settings according to [settings.ini](settings.ini).
+_*ANOTHER NOTE:*_ It's very important that you have DaVinci Resolve open before executing the `edit.py` script or else it will fail.
 
 ```
-python edit.py davinci-resolve-scripting -c tf
+python edit.py davinci-resolve-scripting -c ttt
 ```
 
-_*NOTE:*_ It's very important that you have DaVinci Resolve open before executing the `edit.py` script or else it will fail.
+This script will also import an optional timeline file for the channel that you specified in [settings.ini](settings.ini).
 
 The Trello card for this video will be moved to the **Edit** board indicating the the video is in the edit phase. If using Mac, this directory will be tagged with a **Edit** tag.
 
@@ -147,7 +153,7 @@ The Trello card for this video will be moved to the **Edit** board indicating th
 When you're satisfied with the edit, use `finish-edit.py` to export the DaVinci Resolve project as a .drp file to the root of your project directory.
 
 ```
-python finish-edit.py davinci-resolve-scripting
+python finish-edit.py
 ```
 
 Make sure you execute this script when you still have the project open in DaVinci Resolve.
@@ -156,7 +162,7 @@ The Trello card for this video will be moved to the **Render** board indicating 
 
 ### 6. Render ###
 
-If you have multiple video project that you are editing sequentially, you can render all projects (overnight for example) after your finished editing them all. You can do this with the `render.py` script which will find all video projects that are in the **Render** list in Trello for a particular channel, and  render them sequentially.
+If you have multiple video project that you are working on sequentially, you can render all projects (overnight for example) after your finished editing them all. You can do this with the `render.py` script which will find all video projects that are in the Trello **Render** list for a particular channel and render them one after the other.
 
 The render settings specified for the channel in [settings.ini](settings.ini) be used here.
 
@@ -177,7 +183,7 @@ _*NOTE*_: If you would like your video file to be named something else, this is 
 Use the `upload.py` script to upload all rendered videos for a particular channel to YouTube.
 
 ```
-python3 upload.py -c ttt
+python upload.py -c ttt
 ```
 
 Before uploading, this script will make sure that you have the following metadata for each video:
@@ -187,9 +193,13 @@ Before uploading, this script will make sure that you have the following metadat
 * **Tags**: The tags in the 'tags' checklist on the Trello card will be used as the tags for the video.
 * **Scheduled Date**: The 'Due date' on the Trello card will be used as the date and time that the video will be scheduled to be published on YouTube.
 
-After each video is uploaded, the Trello card for that video will be moved to the **Scheduled** board indicating the the video is scheduled to be published. If using Mac, this directory will be tagged with a **Backup** tag indicating that the project directory for this video can be safely backed up.
+_*NOTE*_: The first time you upload a video to a channel with videoflo, you will need to authorize videoflo to access your YouTube account.
+
+After each video is uploaded, the Trello card for that video will be moved to the **Scheduled** board indicating the the video is scheduled to be published. Attachments will be added to the card that link to the video in YouTube studio and the video itself.
+
+If using Mac, this directory will be tagged with a **Backup** tag indicating that the project directory for this video can be safely backed up.
 
 ## Future Improvements
 - Allow user to control verbosity of console output
-- Automatically open DaVinci Resolve if it needs to be
+- Automatically open DaVinci Resolve if it needs to be open
 - Explain how to export a timeline
