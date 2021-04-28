@@ -101,6 +101,9 @@ def go():
     channel = Channel(flo.config, args.channel)
 
     trello = Trello()
+    if not trello.lists_exist(['Upload', 'Scheduled'], channel):
+        return
+
     upload_dict = get_upload_dict(channel, trello)
     if len(upload_dict) > 0:
         do_uploads(upload_dict, trello)

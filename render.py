@@ -57,6 +57,8 @@ def go():
     channel = Channel(flo.config, args.channel)
 
     trello = Trello()
+    if not trello.lists_exist(['Render', 'Upload'], channel):
+        return
 
     loop(channel, davinci, trello)
 

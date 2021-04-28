@@ -100,7 +100,7 @@ class Video():
             return False
 
         if datetime.now() > self.publish_at:
-            print('FIX: Scheduled date of {} is in the past'.format(dt))
+            print('FIX: Scheduled date {} is past'.format(self.publish_at))
             return False
 
         self.publish_at = self.publish_at.isoformat()

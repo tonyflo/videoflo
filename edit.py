@@ -1,7 +1,6 @@
 # Create a DaVinci Resolve project
 
 from flo.idea import Idea
-from flo.trello import Trello
 from flo.davinci import Davinci
 from flo.videoflo import VideoFlo
 
@@ -22,11 +21,6 @@ def go():
     if davinci.project_manager is None:
         return
 
-    trello = Trello()
-    success = trello.move_card(idea, 'Edit')
-    if not success:
-        return
-
     davinci.create_project(idea)
     if davinci.project is None:
         return
@@ -36,3 +30,4 @@ def go():
     davinci.workspace_setup()
 
 go()
+

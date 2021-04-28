@@ -12,17 +12,22 @@ from flo.const import cardfile, settingsfile
 class Trello():
 
     def __init__(self):
-        self.url = 'https://api.trello.com/1/'
+        # get key and token to authorize with trello
         self.config = configparser.ConfigParser()
         self.config.read(settingsfile)
-        self.key = self.config.get('trello', 'key')
+        try:
+            self.key = self.config.get('trello', 'key')
+        except configparser.NoOptionError:
+            self.key = None
         try:
             self.token = self.config.get('trello', 'token')
         except configparser.NoOptionError:
             self.token = None
-        self.query = None
-        self.board_id = None
+        self.query = self._authorize()
+
+        self.url = 'https://api.trello.com/1/'
         self.headers = {"Accept": "application/json"}
+        self.board_id = None
 
     def _make_request(self, method, url, params):
         try:
@@ -42,7 +47,7 @@ class Trello():
     # save the trello token to the config file and to this object
     def _save_trello_token(self, token):
         if token is None:
-            print('An invalid token was provided.')
+            print('An invalid Trello token was provided.')
             return False
 
         self.config.set('trello', 'token', token)
@@ -70,22 +75,22 @@ class Trello():
     # save the card id to the directory for this idea
     def save_card(self, card_id, idea):
         card_file = os.path.join(idea.path, cardfile)
-        with open(card_file, 'a') as f:
+        with open(card_file, 'w') as f:
             f.write(card_id)
 
     # either get an existing token or request a new one from trello
     def _authorize(self):
         success = True
-        if self.token is None:
-            if self.key is None:
-                print('Could not find Trello key in config file')
-                return False
 
+        if self.key is None:
+            raise ValueError('Could not find Trello key in settings file')
+
+        if self.token is None:
             # get a token from trello via a web browser
             params = {
                 'k': self.key,
                 'u': 'https://trello.com/1/authorize',
-                'n': 'Videoflo',
+                'n': 'videoflo',
                 'e': 'never',
                 's': 'read,write',
             }
@@ -97,12 +102,9 @@ class Trello():
             success = self._save_trello_token(token)
 
         if success:
-            self.query = {
-                'key': self.key,
-                'token': self.token,
-            }
+            return {'key': self.key, 'token': self.token}
 
-        return success
+        raise ValueError('Unable to authorize with Trello')
 
     def _have_user_pick_board(self, boards, channel):
         print("Your Trello boards:")
@@ -124,9 +126,6 @@ class Trello():
         return board_id
 
     def _get_board(self, channel):
-        success = self._authorize()
-        if not success:
-            return None
 
         try:
             self.board_id = self.config.get(channel.id, 'board_id')
@@ -325,3 +324,18 @@ class Trello():
         params = self.query
         response = self._make_request('DELETE', url, params)
 
+    def lists_exist(self, names, channel):
+        board_id = self._get_board(channel)
+        url = self.url + 'boards/{}/lists'.format(board_id)
+        params = self.query
+        response = self._make_request('GET', url, params)
+        lists = response.json()
+
+        exist = True
+        for name in names:
+            this_exists = any(lst['name'] == name for lst in lists)
+            if not this_exists:
+                exist = False
+                print('Please create the Trello board called "{}"'.format(name))
+
+        return exist

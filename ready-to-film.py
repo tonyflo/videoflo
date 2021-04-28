@@ -15,6 +15,9 @@ def go():
         return
 
     trello = Trello()
+    if not trello.lists_exist(['Film'], idea.channel):
+        return
+
     success = trello.move_card(idea, 'Film')
     if not success:
         return

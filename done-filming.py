@@ -44,6 +44,9 @@ def go():
     copy_screen_recordings(flo, idea)
 
     trello = Trello()
+    if not trello.lists_exist(['Edit'], idea.channel):
+        return
+
     success = trello.move_card(idea, 'Edit')
     if not success:
         return

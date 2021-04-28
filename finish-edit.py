@@ -30,6 +30,9 @@ def go():
         return
 
     trello = Trello()
+    if not trello.lists_exist(['Render'], idea.channel):
+        return
+
     success = trello.move_card(idea, 'Render')
     if not success:
         return
