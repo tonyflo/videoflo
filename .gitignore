@@ -1,5 +1,4 @@
 .*
 !/.gitignore
 __pycache__/
-settings.ini
 *.pyc
