@@ -9,7 +9,10 @@ class Channel:
         self.id = identifier # originates from config file channel section name
         self.name = config[self.id]['name'] # proper name of channel
         self.path_name = config[self.id]['path'] # subdirectory for this channel
-        self.timeline = config[self.id]['timeline'] # path to template timeline
+        try:
+            self.timeline = config[self.id]['timeline'] # path to template timeline
+        except KeyError:
+            self.timeline = None # timeline is optional
         self.path = os.path.join(config['main']['root_dir'], self.path_name)
         self.settings = {
             'FrameRate': config[self.id]['framerate'],
