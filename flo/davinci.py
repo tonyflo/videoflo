@@ -1,17 +1,42 @@
 import os
+import sys
 import time
-from python_get_resolve import GetResolve
 
 
 class Davinci():
 
     def __init__(self):
-        self.resolve = GetResolve()
+        self.resolve = self._get_resolve()
         if self.resolve is None:
             print('Is DaVinci Resolve open?')
         self.project = None
         self.project_manager = None
         self.idea = None
+
+    def _get_resolve(self):
+        try:
+        # PYTHONPATH needs to be set correctly for this import statement to work
+            import DaVinciResolveScript as bmd
+        except ImportError:
+            if sys.platform.startswith("darwin"):
+                expectedPath="/Library/Application Support/Blackmagic Design/DaVinci Resolve/Developer/Scripting/Modules/"
+            elif sys.platform.startswith("win") or sys.platform.startswith("cygwin"):
+                import os
+                expectedPath=os.getenv('PROGRAMDATA') + "\\Blackmagic Design\\DaVinci Resolve\\Support\\Developer\\Scripting\\Modules\\"
+            elif sys.platform.startswith("linux"):
+                expectedPath="/opt/resolve/libs/Fusion/Modules/"
+
+            # check if the default path has it...
+            try:
+                import imp
+                bmd = imp.load_source('DaVinciResolveScript', expectedPath+"DaVinciResolveScript.py")
+            except ImportError:
+                # No fallbacks ... report error:
+                print("Unable to find module DaVinciResolveScript - please ensure that the module DaVinciResolveScript is discoverable by python")
+                print("For a default DaVinci Resolve installation, the module is expected to be located in: "+expectedPath)
+                sys.exit()
+
+        return bmd.scriptapp("Resolve")
 
     # load project
     def load_project(self, idea):
