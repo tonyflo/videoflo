@@ -62,6 +62,9 @@ class Davinci():
         except KeyError:
             return # silently return if no timeline found for this channel
 
+        if timeline_path is None:
+            return # silently return
+
         if not os.path.exists(timeline_path):
             print('Timeline at {} does not exist'.format(timeline_path))
             return
