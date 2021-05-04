@@ -11,9 +11,30 @@ By leveraging the Trello API and the YouTube API, videoflo not only will elimina
 - A modern version of Python (tested with v3.8)
 - DaVinci Resolve 17 Studio or higher
 
-### Installation
+### Download
+Download videoflo with the following command.
 ```
 git clone https://github.com/tonyflo/videoflo.git
+```
+
+### Packages
+You will need to install some Python package via pip which allow videoflo to work.
+
+It is recommended that you use a Python virtual environment. For Mac/Linux users for example, you can do something like this:
+```
+python3 -m venv ~/env/vf
+source ~/env/vf/bin/activate
+```
+
+Then install the following packages to this virtual environment.
+```
+pip install configparser requests oauth2client
+pip install google-api-python-client google-auth-oauthlib google-auth-httplib2
+```
+
+In the future when you want to use videoflo, always activate your virtual environment first:
+```
+source ~/env/vf/bin/activate
 ```
 
 ### Configuration
@@ -71,6 +92,12 @@ _*NOTE*_: Please do not manually move cards between lists on your Trello boards.
 ### MacOS Tags
 If you are using a Mac computer, videoflo will tag your video project directories according to their status in the production workflow.
 
+Please install the followin packages to enable this feature.
+```
+pip install mac-tag
+brew install tag
+```
+
 For Mac users only as a one-time setup, open a Finder window, go to Finder > Preferences, and add the following tags. The colors don't matter too much, but make sure you have the exact text for each tag.
 
 <p align="center"><img width="489" alt="macos-tags" src="https://user-images.githubusercontent.com/6558850/115155129-5aad1180-a033-11eb-93eb-108a21fc6942.png"></p>
@@ -88,10 +115,10 @@ There are 7 Python scripts in videoflo that allow you to automate various aspect
 The following is an overview of how those scripts fit into the video production workflow.
 
 ### 1. Create the Directory Structure for Your New Video Idea
-At the inception of an idea for a video, use `new-vid.py` to create the basic directory structure to house your future video files, assets, thumbnails, etc. The `--channel` or `-c` argument needs to match up with the channel section in your [settings.ini](settings.ini) file.
+At the inception of an idea for a video, use `new-vid.py` to create the basic directory structure to house your future video files, assets, thumbnails, etc. The name of the directory in the example below will be `my-new-video`. The `--channel` or `-c` argument needs to match up with the channel section in your [settings.ini](settings.ini) file.
 
 ```
-python new-video.py davinci-resolve-scripting -c ttt
+python new-video.py my-new-video -c ttt
 ```
 
 The first time you do this, you will need to authorize videoflo to access your Trello account. Click on allow and copy the token into your terminal window.
@@ -100,7 +127,7 @@ Additionally, the first time you interact with each of your channels, you'll be 
 
 <p align="center"><img width="489" alt="macos-tags" src="https://user-images.githubusercontent.com/6558850/116331767-4b416d00-a785-11eb-878a-984872aa13c7.png"></p>
 
-Based on the configuration setting example above, this will create the following directory for your video project `/Volumes/vid/channels/tony-teaches-tech/davinci-resolve-scripting`. If using Mac, this directory will be tagged with a **Script** tag.
+Based on the configuration setting example above, this will create the following directory for your video project `/Volumes/vid/channels/tony-teaches-tech/my-new-video`. If using Mac, this directory will be tagged with a **Script** tag.
 
 In this directory, a `camera` subdirectory will be created. This is where you will eventually copy your camera's video file for this project.
 
@@ -109,9 +136,9 @@ This will also create an empty `notes.txt` file in this directory. You can use t
 Additionally, a new card will be added to the Script list in Trello.
 
 ### 2. Research and Plan
-With an idea in your head, it's best practice to do some keyword research for your video topic. This will not only help you determine the title and description for your video, but also point you in the right direction for general research on the topic.
+With an idea in your head, it's best practice to do some keyword research for your video topic. This will not only help you determine the final title and description for your video, but also point you in the right direction for general research on the topic.
 
-In Trello, put the title and description of your YouTube video as the title and description of the new card. Additionally, put the tags for your keyword research in the tags checklist on the card. If you don't have all of this information yet, that's okay. You can add this information anytime before uploading; however, it's highly recommended that you put some serious thought into this as early as possible.
+Based on your research, put the title and description of your YouTube video as the title and description of the new card in Trello. Additionally, put the tags for your keyword research in the tags checklist on the card in Trello. If you don't have all of this information yet, that's okay. You can add this information anytime before uploading; however, it's highly recommended that you put some serious thought into this as early as possible.
 
 <p align="center"><img width="489" alt="macos-tags" src="https://user-images.githubusercontent.com/6558850/116171607-f0910e00-a6bd-11eb-97ea-ae265bce0b36.png"></p>
 
@@ -121,7 +148,7 @@ You can make a simple outline or write a script in `notes.txt`. If you need more
 
 After you have written a script or outline, use `ready-to-film.py` to update the state of the video.
 ```
-python ready-to-film.py davinci-resolve-scripting -c ttt
+python ready-to-film.py my-new-video -c ttt
 ```
 
 The Trello card for this video will be moved to the **Film** board indicating that the video is ready to be filmed. If using Mac, this directory will be tagged with a **Film** tag.
@@ -129,9 +156,9 @@ The Trello card for this video will be moved to the **Film** board indicating th
 ### 3. Shoot the Video
 Set aside some time and plan to film multiple videos in the same day. This not only is more efficient, but also allows you to take full advantage of the batching capability of videoflo.
 
-After filming each video, use `done-filming.py` to update the state of the video.
+After filming each video, use `done-filming.py` to simply update the state of the video in Trello.
 ```
-python done-filming.py davinci-resolve-scripting -c ttt
+python done-filming.py my-new-video -c ttt
 ```
 
 If you specified a location for screen recordings in [settings.ini](settings.ini), this script will move these to a `screen` folder in the root of your project directory.
@@ -146,7 +173,7 @@ _*Note*_: You'll need to manually copy your camera's video files from your SD ca
 _*ANOTHER NOTE:*_ It's very important that you have DaVinci Resolve open before executing the `edit.py` script or else it will fail.
 
 ```
-python edit.py davinci-resolve-scripting -c ttt
+python edit.py my-new-video -c ttt
 ```
 
 This script will also import an optional timeline file for the channel that you specified in [settings.ini](settings.ini).
@@ -205,3 +232,4 @@ If using Mac, this directory will be tagged with a **Backup** tag indicating tha
 - Allow user to control verbosity of console output
 - Automatically open DaVinci Resolve if it needs to be open
 - Explain how to export a timeline
+- Ability to rename video project directory
