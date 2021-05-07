@@ -14,6 +14,8 @@ def go():
         print('Directory for {} not found'.format(idea.name))
         return
 
+    idea.copy_screen_recordings(flo)
+
     trello = Trello()
     if not trello.lists_exist(['Film'], idea.channel):
         return

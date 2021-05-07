@@ -1,6 +1,8 @@
 # Video idea object
 
 import os
+from glob import glob
+from shutil import move
 from flo.channel import Channel
 from flo.const import cardfile
 
@@ -63,4 +65,28 @@ class Idea():
         for folder in ['camera']:
             new_folder = os.path.join(self.path, folder)
             os.mkdir(new_folder)
+
+    # copy screen recordings to this video project's screen directory
+    def copy_screen_recordings(self, flo):
+        try:
+            screen_recordings = flo.config['main']['screens']
+        except KeyError:
+            # assume the user does not have screen recordings and silently return
+            return
+
+        # check to see if there are even screen recordings to copy
+        screen_recordings = glob(screen_recordings)
+        if len(screen_recordings) == 0:
+            return
+
+        # create the screen recordings directory if it doesn't already exist
+        screens_path = os.path.join(self.path, 'screen', '')
+        if not os.path.exists(screens_path):
+            os.mkdir(screens_path)
+
+        # move the screen recordings
+        for src in screen_recordings:
+            move(src, screens_path)
+            name = os.path.basename(src)
+            print('Moved {}'.format(name))
 
