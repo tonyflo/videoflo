@@ -49,12 +49,12 @@ If you have multiple YouTube channels, it is recommended to create subdirectorie
 * `/Volumes/vid/channels/tony-florida/`
 * `/Volumes/vid/channels/thrifty-tony/`
 
-If you will have screen recordings, please specify the path where your screen recordings are saved. Notice how the `screen_recordings` settings below uses an asterisk as a wildcard character to match any .mov files with a filename that starts with "Screen Recording".
+If you will generate any screen recordings or screenshots during the research or filming phase, please specify the path where your screen recordings and screenshots are saved. Notice how the `screens` settings below uses an asterisk as a wildcard character to match any filenames that start with "Screen". This is the default naming convention for QuickTime Player which is the recommended way to capture screen recordings and screenshots.
 
 ```
 [main]
 ...
-screen_recordings = /Users/tonyflorida/Desktop/Screen Recording*.mov
+screens = /Users/tonyflorida/Desktop/Screen*
 ```
 
 For each one of your channels, add a section in your [settings.ini](settings.ini) file. You will need at least one section, but can have as many sections as you have channels. Pick a short, memorable name for your section name as you will use this name to distinguish your channel on the command line. In the snippet below, the section for [Tony Teaches Tech](https://www.youtube.com/channel/UCWPJwoVXJhv0-ucr3pUs1dA) and I named my section `[ttt]`.
@@ -100,7 +100,7 @@ brew install tag
 
 For Mac users only as a one-time setup, open a Finder window, go to Finder > Preferences, and add the following tags. The colors don't matter too much, but make sure you have the exact text for each tag.
 
-<p align="center"><img width="489" alt="macos-tags" src="https://user-images.githubusercontent.com/6558850/115155129-5aad1180-a033-11eb-93eb-108a21fc6942.png"></p>
+<p align="center"><img width="489" alt="MacOS tags" src="https://user-images.githubusercontent.com/6558850/115155129-5aad1180-a033-11eb-93eb-108a21fc6942.png"></p>
 
 ## Using videoflo
 There are 7 Python scripts in videoflo that allow you to automate various aspects of video production from idea to publishing.
@@ -125,7 +125,7 @@ The first time you do this, you will need to authorize videoflo to access your T
 
 Additionally, the first time you interact with each of your channels, you'll be asked to select the Trello board associated with your channel.
 
-<p align="center"><img width="489" alt="macos-tags" src="https://user-images.githubusercontent.com/6558850/116331767-4b416d00-a785-11eb-878a-984872aa13c7.png"></p>
+<p align="center"><img width="489" alt="Trello board list" src="https://user-images.githubusercontent.com/6558850/116331767-4b416d00-a785-11eb-878a-984872aa13c7.png"></p>
 
 Based on the configuration setting example above, this will create the following directory for your video project `/Volumes/vid/channels/tony-teaches-tech/my-new-video`. If using Mac, this directory will be tagged with a **Script** tag.
 
@@ -140,7 +140,7 @@ With an idea in your head, it's best practice to do some keyword research for yo
 
 Based on your research, put the title and description of your YouTube video as the title and description of the new card in Trello. Additionally, put the tags for your keyword research in the tags checklist on the card in Trello. If you don't have all of this information yet, that's okay. You can add this information anytime before uploading; however, it's highly recommended that you put some serious thought into this as early as possible.
 
-<p align="center"><img width="489" alt="macos-tags" src="https://user-images.githubusercontent.com/6558850/116171607-f0910e00-a6bd-11eb-97ea-ae265bce0b36.png"></p>
+<p align="center"><img width="500" alt="Annotated Trello card" src="https://user-images.githubusercontent.com/6558850/117514426-a6731c80-af48-11eb-8dbe-912e095bb322.png"></p>
 
 Now that you know exactly what your video is going to be about, do the necessary research for it.
 
@@ -150,6 +150,8 @@ After you have written a script or outline, use `ready-to-film.py` to update the
 ```
 python ready-to-film.py my-new-video -c ttt
 ```
+
+If you specified a location for screen recordings and screenshots in [settings.ini](settings.ini), this script will move these to a `screen` folder in the root of your project directory.
 
 The Trello card for this video will be moved to the **Film** board indicating that the video is ready to be filmed. If using Mac, this directory will be tagged with a **Film** tag.
 
@@ -186,6 +188,11 @@ python finish-edit.py
 ```
 
 Make sure you execute this script when you still have the project open in DaVinci Resolve.
+
+_*NOTE*_: It is recommended to have 'Live Save' enabled in DaVinci Resolve; otherwise, the project export will fail if you haven't saved your project. You can enable this by going to DaVinci Resolve > Preferences > User > Project Save and Load > Save Settings and checking the 'Live Save' checkbox.
+
+<p align="center"><img width="480" alt="Live Save in DaVinci Resolve" src="https://user-images.githubusercontent.com/6558850/117513619-f51fb700-af46-11eb-8a04-8ffe2e1c8171.png"></p>
+
 
 The Trello card for this video will be moved to the **Render** board indicating the the video is ready to be rendered. If using Mac, this directory will be tagged with a **Render** tag.
 
@@ -227,9 +234,3 @@ _*NOTE*_: The first time you upload a video to a channel with videoflo, you will
 After each video is uploaded, the Trello card for that video will be moved to the **Scheduled** board indicating the the video is scheduled to be published. Attachments will be added to the card that link to the video in YouTube studio and the video itself.
 
 If using Mac, this directory will be tagged with a **Backup** tag indicating that the project directory for this video can be safely backed up.
-
-## Future Improvements
-- Allow user to control verbosity of console output
-- Automatically open DaVinci Resolve if it needs to be open
-- Explain how to export a timeline
-- Ability to rename video project directory
