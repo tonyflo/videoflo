@@ -6,7 +6,8 @@ import requests
 import webbrowser
 import configparser
 from pathlib import Path
-from flo.const import cardfile, settingsfile
+from datetime import datetime, timedelta
+from flo.const import cardfile, settingsfile, DATE_FORMAT
 
 
 class Trello():
@@ -153,12 +154,39 @@ class Trello():
 
         return card_id
 
+    # return the next day based on the latest date on the board
+    def _get_next_due_date(self, board_id):
+        url = self.url + 'boards/{}/cards/open'.format(board_id)
+        params = self.query
+        params['fields'] = 'due'
+        response = self._make_request('GET', url, params)
+        if response is None:
+            return None
+
+        cards = response.json()
+        if len(cards) == 0:
+            return None
+
+        dues = [card['due'] for card in cards if card['due'] is not None]
+        if len(dues) == 0:
+            return None
+
+        dates = [datetime.strptime(due, DATE_FORMAT) for due in dues]
+        sorted_dates = sorted(dates)
+        latest_date = sorted_dates[-1]
+
+        # TODO: factor in release schedule for this channel
+        next_date = latest_date + timedelta(days=1)
+
+        return next_date
+
     def _get_list(self, board_id, name):
         list_id = None
         url = self.url + 'boards/{}/lists'.format(board_id)
 
         params = self.query
         params['filter'] = 'open'
+        params['fields'] = 'all'
         response = self._make_request('GET', url, params)
         if response is None:
             return None
@@ -211,11 +239,12 @@ class Trello():
             print('Unable to create empty tags checklist')
             return False
 
-    def _create_card(self, list_id, idea):
+    def _create_card(self, list_id, idea, due_date):
         url = self.url + 'cards'
         params = self.query
         params['idList'] = list_id
         params['name'] = idea.name
+        params['due'] = due_date
         params['pos'] = 'top'
         response = self._make_request('POST', url, params)
         if response is None:
@@ -238,7 +267,13 @@ class Trello():
         if list_id is None:
             return None
 
-        card = self._create_card(list_id, idea)
+        due_date = self._get_next_due_date(board_id)
+        if due_date is None:
+            due_date = datetime.utcnow() + timedelta(days=7)
+            print('NOTE: set due date for 1 week from today')
+
+        due_date = due_date.isoformat() + 'Z'
+        card = self._create_card(list_id, idea, due_date)
         if card is None:
             return None
 

@@ -3,6 +3,7 @@
 import os
 from datetime import datetime
 from flo import youtube
+from flo.const import DATE_FORMAT
 
 
 class Video():
@@ -24,7 +25,7 @@ class Video():
         if publish_at is None:
             return None
 
-        dt = datetime.strptime(publish_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+        dt = datetime.strptime(publish_at, DATE_FORMAT)
         return dt
 
     # get the length of the tags according to how YouTube counts them
