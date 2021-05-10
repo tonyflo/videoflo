@@ -4,7 +4,7 @@ import os
 from glob import glob
 from shutil import move
 from flo.channel import Channel
-from flo.const import cardfile
+from flo.const import CARDFILE
 
 
 class Idea():
@@ -55,7 +55,7 @@ class Idea():
 
     # create files for the idea
     def make_files(self):
-        file_list = ['notes.txt', cardfile]
+        file_list = ['notes.txt', CARDFILE]
         for f in file_list:
             new_file = os.path.join(self.path, f)
             open(new_file, 'a').close()

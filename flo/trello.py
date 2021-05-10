@@ -7,7 +7,7 @@ import webbrowser
 import configparser
 from pathlib import Path
 from datetime import datetime, timedelta
-from flo.const import cardfile, settingsfile, DATE_FORMAT
+from flo.const import CARDFILE, SETTINGSFILE, DATE_FORMAT
 
 
 class Trello():
@@ -15,7 +15,7 @@ class Trello():
     def __init__(self):
         # get key and token to authorize with trello
         self.config = configparser.ConfigParser()
-        self.config.read(settingsfile)
+        self.config.read(SETTINGSFILE)
         try:
             self.key = self.config.get('trello', 'key')
         except configparser.NoOptionError:
@@ -52,7 +52,7 @@ class Trello():
             return False
 
         self.config.set('trello', 'token', token)
-        with open(settingsfile, 'w') as configfile:
+        with open(SETTINGSFILE, 'w') as configfile:
             self.config.write(configfile)
 
         self.token = token
@@ -66,7 +66,7 @@ class Trello():
             return False
 
         self.config.set(channel.id, 'board_id', board_id)
-        with open(settingsfile, 'w') as configfile:
+        with open(SETTINGSFILE, 'w') as configfile:
             self.config.write(configfile)
 
         self.board_id= board_id
@@ -75,7 +75,7 @@ class Trello():
 
     # save the card id to the directory for this idea
     def save_card(self, card_id, idea):
-        card_file = os.path.join(idea.path, cardfile)
+        card_file = os.path.join(idea.path, CARDFILE)
         with open(card_file, 'w') as f:
             f.write(card_id)
 
@@ -148,14 +148,18 @@ class Trello():
 
     def _get_card(self, idea):
         card = None
-        card_file = os.path.join(idea.path, cardfile)
+        card_file = os.path.join(idea.path, CARDFILE)
         with open(card_file) as f:
             card_id = f.readline().strip()
 
         return card_id
 
-    # return the next day based on the latest date on the board
-    def _get_next_due_date(self, board_id):
+    # return the next date based on the board's latest due date and the
+    # channel's release schedule
+    def _get_next_due_date(self, board_id, schedule):
+        if schedule is None:
+            return None
+
         url = self.url + 'boards/{}/cards/open'.format(board_id)
         params = self.query
         params['fields'] = 'due'
@@ -175,8 +179,9 @@ class Trello():
         sorted_dates = sorted(dates)
         latest_date = sorted_dates[-1]
 
-        # TODO: factor in release schedule for this channel
         next_date = latest_date + timedelta(days=1)
+        while next_date.isoweekday() not in schedule:
+            next_date = next_date + timedelta(days=1)
 
         return next_date
 
@@ -267,7 +272,8 @@ class Trello():
         if list_id is None:
             return None
 
-        due_date = self._get_next_due_date(board_id)
+        schedule = idea.channel.schedule
+        due_date = self._get_next_due_date(board_id, schedule)
         if due_date is None:
             due_date = datetime.utcnow() + timedelta(days=7)
             print('NOTE: set due date for 1 week from today')
@@ -327,7 +333,7 @@ class Trello():
 
     def find_path_for_id(self, card_id, channel):
         channel_path = Path(channel.path)
-        for card_file in list(channel_path.rglob(cardfile)):
+        for card_file in list(channel_path.rglob(CARDFILE)):
             with open(card_file) as f:
                 if card_id != f.read().strip():
                     continue

@@ -4,7 +4,7 @@ import os
 import argparse
 import configparser
 from flo.channel import Channel
-from flo.const import settingsfile
+from flo.const import SETTINGSFILE
 
 
 class VideoFlo():
@@ -12,7 +12,7 @@ class VideoFlo():
     def __init__(self):
         # read settings file
         config = configparser.ConfigParser()
-        config.read(settingsfile)
+        config.read(SETTINGSFILE)
         self.config = config
         self.root= config['main']['root_dir']
         self.channels = [Channel(self.config, c) for c in self._get_channels()]
