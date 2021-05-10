@@ -62,6 +62,7 @@ For each one of your channels, add a section in your [settings.ini](settings.ini
 [ttt]
 name = Tony Teaches Tech
 path = tony-teaches-tech
+schedule = 1,2,3,4
 timeline = /Volumes/vid/assets/tony-teaches-tech/Timeline1.drt
 framerate = 24
 width = 3840
@@ -71,6 +72,7 @@ height = 2160
 A description of each configuration option follows.
 * `name` (required) The proper name of your YouTube channel
 * `path` (required) The subdirectory under `root_dir` where your video projects will exist
+* `schedule` (required) The release schedule for your channel as a comma separated list where 1 is Monday and 7 is Sunday
 * `timeline` (optional) The full path to a DaVinci Resolve timeline file that will act as a template for this channel's videos. Your timeline might contain an intro or outro that you use across all videos on your channel. Starting in DaVinci Resolve 17, you can export a timeline by going to File > Export > Timeline.
 * `framerate` (required) The framerate that you export your videos
 * `width` (required) The width that you export your videos
@@ -133,7 +135,7 @@ In this directory, a `camera` subdirectory will be created. This is where you wi
 
 This will also create an empty `notes.txt` file in this directory. You can use this as a place to put an outline for your video or other relevant notes.
 
-Additionally, a new card will be added to the Script list in Trello.
+Additionally, a new card will be added to the Script list in Trello. The due date for this card will be set as the next available date based on the release schedule you defined in `settings.ini` for this channel. The due date on the card corresponds to the date and time in the future that you want the video to be published on YouTube. For example, let's say you publish videos every Tuesday at 12:30 PM. If the Trello card with the latest due date right now is May 11, 2021 at 12:30 PM, then your new Trello card will be assigned a due date of May 18, 2021 at 12:30 PM.
 
 ### 2. Research and Plan
 With an idea in your head, it's best practice to do some keyword research for your video topic. This will not only help you determine the final title and description for your video, but also point you in the right direction for general research on the topic.
