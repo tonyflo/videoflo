@@ -7,7 +7,7 @@ from flo.davinci import Davinci
 from flo.channel import Channel
 from flo.videoflo import VideoFlo
 from flo.mactag import update_tag
-
+from datetime import datetime
 
 # loop over videos ready to be rendered
 def loop(channel, davinci, trello):
@@ -17,6 +17,7 @@ def loop(channel, davinci, trello):
 
     counter = 0
     finished = 0
+    start_time = datetime.now()
     for item in renderable:
         card_id = item['id']
         name = item['name']
@@ -44,7 +45,8 @@ def loop(channel, davinci, trello):
     if total == 0:
         print('Nothing to render')
     else:
-        print('Rendered {}/{} videos'.format(finished, total))
+        duration = datetime.now() - start_time
+        print('Rendered {}/{} videos in {}'.format(finished, total, duration))
 
 def go():
     davinci = Davinci()
