@@ -26,6 +26,12 @@ class VideoFlo():
                             required=True,
                             help='Channel associated with the video')
 
+    def _add_upload_args(self, parser):
+        parser.add_argument('--dry-run',
+                            action='store_true',
+                            required=False,
+                            help="Do checks only. Don't upload")
+
     # command line arguments for an individual video idea
     def get_idea_arguments(self):
         parser = argparse.ArgumentParser()
@@ -39,6 +45,13 @@ class VideoFlo():
     def get_channel_arguments(self):
         parser = argparse.ArgumentParser()
         self._add_channel_arg(parser)
+        args = parser.parse_args()
+        return args
+
+    def get_upload_arguments(self):
+        parser = argparse.ArgumentParser()
+        self._add_channel_arg(parser)
+        self._add_upload_args(parser)
         args = parser.parse_args()
         return args
 

@@ -33,6 +33,7 @@ def get_upload_dict(channel, trello):
     uploadable = trello.get_list('Upload', channel)
     upload_dict = {}
 
+    total_upload_size = 0
     count = 0
     warn = 0
     for item in uploadable:
@@ -67,13 +68,17 @@ def get_upload_dict(channel, trello):
 
         # video file
         video_file = get_video_file(path)
-        warn = warn + 1 if video_file is None else warn
+        if video_file is None:
+            warn = warn + 1
+            continue
 
         video = Video(path, video_file, channel, metadata, thumbnail, idea)
         warn = warn + 1 if not video.check_title() else warn
         warn = warn + 1 if not video.check_description() else warn
         warn = warn + 1 if not video.check_date() else warn
         warn = warn + 1 if not video.check_tags() else warn
+
+        total_upload_size += video.video_size
 
         upload_dict[card_id] = video
 
@@ -83,6 +88,10 @@ def get_upload_dict(channel, trello):
         print('No videos ready for upload')
     else:
         print('{} problem(s) found'.format(warn))
+
+    total_upload_gb = round(total_upload_size / (1024 * 1024 * 1024), 3)
+    print('Total size of upload: {} GB'.format(total_upload_gb))
+
     return {}
 
 # prepare uploads
@@ -97,15 +106,16 @@ def do_uploads(upload_dict, trello):
 
 def go():
     flo = VideoFlo()
-    args = flo.get_channel_arguments()
+    args = flo.get_upload_arguments()
     channel = Channel(flo.config, args.channel)
+    dry_run = args.dry_run
 
     trello = Trello()
     if not trello.lists_exist(['Upload', 'Scheduled'], channel):
         return
 
     upload_dict = get_upload_dict(channel, trello)
-    if len(upload_dict) > 0:
+    if not dry_run and len(upload_dict) > 0:
         do_uploads(upload_dict, trello)
 
 go()

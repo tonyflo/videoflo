@@ -12,6 +12,7 @@ class Video():
         self.path = path
         self.file = filename
         self.video = os.path.join(self.path, self.file)
+        self.video_size = self._get_file_size(self.video)
         self.thumbnail = thumbnail
         self.channel = channel
         self.idea = idea
@@ -20,6 +21,10 @@ class Video():
         self.description = metadata['description']
         self.publish_at = self._set_publish_time(metadata['scheduled'])
         self.tags = metadata['tags']
+
+    def _get_file_size(self, path):
+         size = os.path.getsize(path)
+         return size
 
     def _set_publish_time(self, publish_at):
         if publish_at is None:
