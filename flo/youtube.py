@@ -1,8 +1,12 @@
+import http
 import httplib2
 import os
 import random
 import sys
 import time
+
+# TODO: https://github.com/googleapis/google-api-python-client/issues/803
+# TODO ouauth2client is deprecated
 
 from apiclient.discovery import build
 from apiclient.errors import HttpError
@@ -20,7 +24,10 @@ httplib2.RETRIES = 1
 MAX_RETRIES = 10
 
 # Always retry when these exceptions are raised.
-RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error)
+RETRIABLE_EXCEPTIONS = (httplib2.HttpLib2Error, IOError, http.client.NotConnected,
+  http.client.IncompleteRead, http.client.ImproperConnectionState,
+  http.client.CannotSendRequest, http.client.CannotSendHeader,
+  http.client.ResponseNotReady, http.client.BadStatusLine)
 
 # Always retry when an apiclient.errors.HttpError with one of these status
 # codes is raised.

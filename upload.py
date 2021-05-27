@@ -6,6 +6,7 @@ from flo.trello import Trello
 from flo.channel import Channel
 from flo.videoflo import VideoFlo
 from flo.mactag import update_tag
+from datetime import datetime
 
 
 # get the thumbnail file
@@ -82,6 +83,10 @@ def get_upload_dict(channel, trello):
 
         upload_dict[card_id] = video
 
+
+    total_upload_gb = round(total_upload_size / (1024 * 1024 * 1024), 3)
+    print('Total size of upload: {} GB'.format(total_upload_gb))
+
     if warn == 0 and count > 0:
         return upload_dict
     elif count == 0:
@@ -89,20 +94,23 @@ def get_upload_dict(channel, trello):
     else:
         print('{} problem(s) found'.format(warn))
 
-    total_upload_gb = round(total_upload_size / (1024 * 1024 * 1024), 3)
-    print('Total size of upload: {} GB'.format(total_upload_gb))
-
     return {}
 
 # prepare uploads
 def do_uploads(upload_dict, trello):
+    upload_count = 0
+    upload_total = len(upload_dict)
+    start_time = datetime.now()
     for card_id, video in upload_dict.items():
         print('Starting upload for {}'.format(video.file))
         video_id = video.upload()
         if video_id is not None:
+            upload_count += 1
             update_tag('Backup', video.path)
             trello.move_card(video.idea, 'Scheduled')
             trello.attach_links_to_card(card_id, video_id)
+    duration = datetime.now() - start_time
+    print('Uploaded {}/{} videos in {}'.format(upload_count, upload_total, duration))
 
 def go():
     flo = VideoFlo()

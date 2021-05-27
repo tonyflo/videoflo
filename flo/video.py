@@ -79,8 +79,9 @@ class Video():
             print('FIX: No tags found')
             return False
 
-        if self._get_tags_len(tags) > 500:
-            print('FIX: Tags over 500 characters')
+        tags_len = self._get_tags_len(tags)
+        if tags_len > 500:
+            print('FIX: Tags over 500 characters: {}'.format(tags_len))
             return False
 
         self.tags = tags
