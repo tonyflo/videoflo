@@ -33,3 +33,6 @@ def update_tag(tag, path, do_open=False):
     mac_tag.remove(['*'], [path])
     add_tag(tag, path, do_open)
 
+# get tags for path
+def get_tags(paths):
+    return mac_tag.get(paths)
