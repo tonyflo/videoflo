@@ -7,6 +7,11 @@ from flo.channel import Channel
 from flo.const import SETTINGSFILE
 
 
+def dir_path(string):
+    if os.path.isdir(string):
+        return string
+    raise argparse.ArgumentTypeError('Not a valid path: {}'.format(string))
+
 class VideoFlo():
 
     def __init__(self):
@@ -37,6 +42,8 @@ class VideoFlo():
         parser = argparse.ArgumentParser()
         parser.add_argument('name',
                             help='Name of video project')
+        parser.add_argument('-p', '--path', type=dir_path,
+                            help='Destination directory')
         self._add_channel_arg(parser)
         args = parser.parse_args()
         return args

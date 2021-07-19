@@ -19,8 +19,7 @@ class Idea():
         args = flo.get_idea_arguments()
         self.channel = Channel(flo.config, args.channel)
         self.name = args.name
-        if self.exists:
-            self.path = self._get_idea_directory()
+        self.path = self._get_idea_directory(args.path)
 
     # instantiate an idea object given a name and channel
     def from_project(self, project_name, channel):
@@ -34,23 +33,24 @@ class Idea():
         return os.path.exists(idea_path)
 
     # get the path to the root of the idea directory
-    def _get_idea_directory(self):
-        idea_path = os.path.join(self.channel.path, self.name)
+    def _get_idea_directory(self, path=None):
+        root = self.channel.path if path is None else path
+        idea_path = os.path.join(root, self.name)
         return idea_path
 
     # create the idea directory for this video
     def make_directory(self):
-        idea_path = self._get_idea_directory()
+        idea_path = self.path
         try:
             os.mkdir(idea_path)
         except FileNotFoundError:
-            print('Directory {} does not exist'.format(idea_path))
+            dirname = os.path.dirname(idea_path)
+            print('Directory {} does not exist'.format(dirname))
             return None
         except FileExistsError:
             print('Directory {} already exist'.format(idea_path))
             return None
 
-        self.path = idea_path
         return idea_path
 
     # create files for the idea
