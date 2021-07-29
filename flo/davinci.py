@@ -1,6 +1,8 @@
 import os
 import sys
 import time
+from pathlib import Path
+from datetime import datetime
 
 
 class Davinci():
@@ -139,27 +141,30 @@ class Davinci():
 
     # render video
     def render_video(self):
+        stats = {'success': False}
+        start_time = datetime.now()
+
         if self.project is None:
             print('Could not load DaVinci project {}'.format(self.idea.name))
-            return False
+            return stats
 
         status = self._set_render_settings()
         if status == False:
             print('Failed to set render settings for {}'.format(self.idea.name))
-            return False
+            return stats
 
         self._delete_all_render_jobs()
 
         status = self.project.AddRenderJob()
         if status == False:
             print('Failed to add render job for {}'.format(self.idea.name))
-            return False
+            return stats
 
         status = self.project.StartRendering(isInteractiveMode=True)
         if status == False:
             print('Failed to start render for {}'.format(self.idea.name))
             self._delete_all_render_jobs()
-            return False
+            return stats
 
         jobid = self.project.GetRenderJobs()[1]['JobId']
         while(self.project.IsRenderingInProgress()):
@@ -173,8 +178,32 @@ class Davinci():
         if job_status != 'Complete':
             print('Failed to render {}'.format(self.idea.name))
             self._delete_all_render_jobs()
-            return False
+            return stats
+
+        difference = datetime.now() - start_time
+        print('Render time was {}'.format(difference))
+
+        stats['RenderTime'] = round(difference.total_seconds(), 2)
+        stats = self._set_stats(stats)
 
         self._delete_all_render_jobs()
 
-        return True
+        stats['success'] = True
+        return stats
+
+    # statistics associated with the successful render job
+    def _set_stats(self, stats):
+        project = Path(self.idea.path)
+        project_size = sum(f.stat().st_size for f in project.glob('**/*') if f.is_file())
+        stats['ProjectSize'] = round(project_size/1000/1000/1000, 2)
+
+        video = os.path.join(self.idea.path, self.idea.name + '.mov')
+        size = os.path.getsize(video)
+        stats['Size'] = round(size/1000/1000/1000, 2)
+
+        timeline = self.project.GetTimelineByIndex(1)
+        frames = timeline.GetEndFrame() - timeline.GetStartFrame()
+        seconds = frames / 24 # TODO: don't hardcode
+        stats['Length'] = round(seconds, 2)
+
+        return stats

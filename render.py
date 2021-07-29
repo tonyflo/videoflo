@@ -36,10 +36,11 @@ def loop(channel, davinci, trello):
 
         davinci.load_project(idea)
         print('Rendering {}/{} ({})'.format(counter, total, idea.name))
-        success = davinci.render_video()
-        if success:
+        stats = davinci.render_video()
+        if stats['success']:
             update_tag('Upload', idea.path)
             success = trello.move_card(idea, 'Upload')
+            trello.set_render_stats(idea, stats)
         finished = finished + 1 if success else finished
 
     if total == 0:

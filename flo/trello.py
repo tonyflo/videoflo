@@ -30,14 +30,12 @@ class Trello():
         self.headers = {"Accept": "application/json"}
         self.board_id = None
 
-    def _make_request(self, method, url, params):
+    def _make_request(self, method, url, params, json=False):
         try:
-            response = requests.request(
-                method=method,
-                url=url,
-                params=params,
-                headers=self.headers,
-            )
+            if json:
+                response = requests.request(method=method, url=url, json=params, headers=self.headers)
+            else:
+                response = requests.request(method=method, url=url, params=params, headers=self.headers)
             return response
         except requests.exceptions.ConnectionError:
              print('Not connected to the internet')
@@ -380,3 +378,45 @@ class Trello():
                 print('Please create the Trello board called "{}"'.format(name))
 
         return exist
+
+    def _set_custom_field(self, card_id, field_id, name, value):
+        url = self.url + 'card/{}/customField/{}/item'.format(card_id, field_id)
+        params = self.query
+        params['value'] = {'number': str(value)} # API wants str for numbers
+        response = self._make_request('PUT', url, params, json=True)
+        if response is None:
+            print('Unable to set custom field: {} = {}'.format(name, value))
+            return False
+
+        # TODO: move this error handling into _make_request?
+        if response.status_code != 200:
+            print('Unable to set {} field: {}'.format(name, response.json()['message']))
+            return False
+
+        return True
+
+    def set_render_stats(self, idea, stats):
+        channel = idea.channel
+        board_id = self._get_board(channel)
+        if board_id is None:
+            return False
+
+        card_id = self._get_card(idea)
+        if card_id is None or card_id == '':
+            print('Unable to determine the id for this Trello card')
+            return False
+
+        url = self.url + 'boards/{}/customFields'.format(board_id)
+        params = self.query
+        response = self._make_request('GET', url, params)
+        if response is None:
+            print('Unable to get custom fields from Trello')
+            return False
+
+        fields = response.json()
+        for field in fields:
+            name = field['name']
+            value = stats[name]
+            field_id = field['id']
+            self._set_custom_field(card_id, field_id, name, value)
+
