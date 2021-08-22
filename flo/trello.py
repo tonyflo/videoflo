@@ -233,10 +233,10 @@ class Trello():
 
         return True
 
-    def _create_checklist(self, card_id):
+    def _create_checklist(self, card_id, name):
         url = self.url + 'cards/{}/checklists'.format(card_id)
         params = self.query
-        params['name'] = 'tags'
+        params['name'] = name
         response = self._make_request('POST', url, params)
         if response is None:
             print('Unable to create empty tags checklist')
@@ -286,11 +286,12 @@ class Trello():
             print('Invalid card id')
             return None
 
-        self._create_checklist(card_id)
+        self._create_checklist(card_id, 'hashtags')
+        self._create_checklist(card_id, 'tags')
 
         return card_id
 
-    def get_tags_from_checklist(self, checklist_ids):
+    def get_checklist(self, checklist_ids, name):
         checklist_data = None
         # if there are multiple checklists, need to find the tags one
         for cid in checklist_ids:
@@ -303,16 +304,15 @@ class Trello():
                 return None
 
             checklist_data = response.json()
-            if 'tags' == checklist_data['name']:
+            if name == checklist_data['name']:
                 break
 
         if checklist_data is None:
             return None
 
         # TODO: might be able to do something with the state of the checkbox
-        tags = [tag['name'] for tag in checklist_data['checkItems']]
-        return tags
-
+        items = [item['name'] for item in checklist_data['checkItems']]
+        return items
 
     def get_list(self, list_name, channel):
         board_id = self._get_board(channel)

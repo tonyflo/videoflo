@@ -42,7 +42,8 @@ def get_upload_dict(channel, trello):
             'title': item['name'],
             'description': item['desc'],
             'scheduled': item['due'],
-            'tags': trello.get_tags_from_checklist(item['idChecklists']),
+            'tags': trello.get_checklist(item['idChecklists'], 'tags'),
+            'hashtags': trello.get_checklist(item['idChecklists'], 'hashtags'),
         }
 
         card_id = item['id']
@@ -78,6 +79,8 @@ def get_upload_dict(channel, trello):
         warn = warn + 1 if not video.check_description() else warn
         warn = warn + 1 if not video.check_date() else warn
         warn = warn + 1 if not video.check_tags() else warn
+        warn = warn + 1 if not video.check_hashtags() else warn
+        video.format_description()
 
         total_upload_size += video.video_size
 

@@ -18,15 +18,16 @@ class Video():
         self.idea = idea
         self.category = 26 # TODO: hardcoded as How To & Style
         self.title = metadata['title']
-        self.description = metadata['description']
-        self.publish_at = self._set_publish_time(metadata['scheduled'])
         self.tags = metadata['tags']
+        self.hashtags = metadata['hashtags']
+        self.description = metadata['description']
+        self.publish_at = self._get_publish_time(metadata['scheduled'])
 
     def _get_file_size(self, path):
          size = os.path.getsize(path)
          return size
 
-    def _set_publish_time(self, publish_at):
+    def _get_publish_time(self, publish_at):
         if publish_at is None:
             return None
 
@@ -60,8 +61,24 @@ class Video():
 
         return status
 
+    # check that hashtags are in an acceptable format
+    def check_hashtags(self):
+        # strip # and whitespace
+        hts = [t.strip('#').strip() for t in self.hashtags]
+
+        # remove non-alphanumeric
+        hts = [t for t in self.hashtags if t.isalnum()]
+        diff = set(self.hashtags) - set(hts)
+        if len(diff) > 0:
+            removed = ', '.join(diff)
+            print('WARN: These hashtags were removed: {}'.format(removed))
+
+        # remove duplicates
+        self.hashtags = list(set(hts))
+
+        return True
+
     # check tags against YouTube limits
-    # TODO: check for duplicate tags
     def check_tags(self):
         if self.tags is None or len(self.tags) == 0:
             print('FIX: No tags found')
@@ -71,8 +88,8 @@ class Video():
         tags = [t for t in self.tags if 2 <= len(t) <= 100]
         diff = set(self.tags) - set(tags)
         if len(diff) > 0:
-            removed = ','.join(diff)
-            print('WARN: The following tags were removed: {}'.format(removed))
+            removed = ', '.join(diff)
+            print('WARN: These tags were removed: {}'.format(removed))
 
         # check again in case the filter removed them all
         if tags is None or len(tags) == 0:
@@ -84,8 +101,15 @@ class Video():
             print('FIX: Tags over 500 characters: {}'.format(tags_len))
             return False
 
-        self.tags = tags
+        # remove duplicates
+        self.tags= list(set(tags))
+
         return True
+
+    # call this function only after calling check_hashtags
+    def format_description(self):
+        hashtags = '\n\n#' + ' #'.join(self.hashtags) if self.hashtags else ''
+        self.description = '{}{}'.format(self.description, hashtags)
 
     # check for description
     def check_description(self):
@@ -97,6 +121,8 @@ class Video():
         elif description_len < 10:
             status = False
             print('FIX: Very short description: {}'.format(self.description))
+
+        self.description = self.description.strip()
 
         return status
 

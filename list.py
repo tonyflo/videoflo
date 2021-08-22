@@ -18,5 +18,7 @@ def go():
 
     tags = get_tags(projects)
     for k, v in sorted(tags.items(), key=lambda item: item[1]):
-        print(v[0] + '\t' + os.path.basename(k))
+        tag = v[0] if v else 'NOTAG'
+        print(tag + '\t' + os.path.basename(k))
+
 go()
