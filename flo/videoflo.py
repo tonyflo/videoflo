@@ -5,6 +5,7 @@ import argparse
 import configparser
 from flo.channel import Channel
 from flo.const import SETTINGSFILE
+from flo.mactag import TAGS
 
 
 def dir_path(string):
@@ -37,6 +38,13 @@ class VideoFlo():
                             required=False,
                             help="Do checks only. Don't upload")
 
+    def _add_list_args(self, parser):
+        parser.add_argument('-t', '--tags',
+                            choices=TAGS,
+                            default=TAGS,
+                            required=False,
+                            help='Tag associated with the video''s state')
+
     # command line arguments for an individual video idea
     def get_idea_arguments(self):
         parser = argparse.ArgumentParser()
@@ -52,6 +60,13 @@ class VideoFlo():
     def get_channel_arguments(self):
         parser = argparse.ArgumentParser()
         self._add_channel_arg(parser)
+        args = parser.parse_args()
+        return args
+
+    def get_list_arguments(self):
+        parser = argparse.ArgumentParser()
+        self._add_channel_arg(parser)
+        self._add_list_args(parser)
         args = parser.parse_args()
         return args
 
