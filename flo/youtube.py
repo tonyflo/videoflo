@@ -82,6 +82,7 @@ def get_authenticated_service(video):
   # if this is first time, sign in with oauth
   if credentials is None or credentials.invalid:
     flags = argparser.parse_args(args=[]) # empty flags
+    flags.noauth_local_webserver = True
     credentials = run_flow(flow, storage, flags)
 
   return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
