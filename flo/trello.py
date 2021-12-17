@@ -44,8 +44,10 @@ class Trello():
             response.raise_for_status()
         except requests.exceptions.ConnectionError:
              print('Not connected to the internet')
-             # TODO: this puts us out of sync with Trello
+             # TODO: this potentially puts us out of sync with Trello
         except requests.exceptions.HTTPError:
+            if response.status_code == 409: # 409=conflict, likely a duplicate item (already exists)... let caller handle
+                return response
             print('Error {}: {}'.format(response.status_code, response.reason))
         return None
 
@@ -413,15 +415,54 @@ class Trello():
         for name in names:
             this_exists = any(lst['name'] == name for lst in lists)
             if not this_exists:
-                exist = False
                 if create is False:
+                    exist = False
                     print('Trello list called "{}" does not exist. Please run init.'.format(name))
                 else:
                     lst = self._create_list(board_id, name)
                     if lst is None:
+                        exist = False
                         break
 
         return exist
+
+    def add_custom_fields(self, channel):
+        fields = {
+                  'Length': 'number',
+                  'Size': 'number',
+                  'ProjectSize': 'number',
+                  'RenderTime': 'number',
+                  'filename': 'text',
+        }
+        board_id = self._get_board(channel)
+        for name, kind in fields.items():
+            success = self._add_custom_field(board_id, name, kind)
+            if not success:
+                break
+
+    def _add_custom_field(self, board_id, field_name, field_type):
+        url = self.url + 'customFields'
+        params = self.query
+        params['idModel'] = board_id
+        params['modelType'] = 'board'
+        params['name'] = field_name
+        params['type'] = field_type
+        params['display_cardFront'] = 'false'
+        params['pos'] = 'bottom'
+        response = self._make_request('POST', url, params)
+        if response is None:
+            return False
+
+        if response.status_code == 409:
+            return True # field already exists
+
+        field = response.json()
+        if 'id' not in field:
+            print('Something went wrong when creating the {} custom field'.format(field_name))
+            return False
+
+        print('Added {} field to Trello cards'.format(field_name))
+        return True
 
     def _set_custom_field(self, card_id, field_id, name, value):
         url = self.url + 'card/{}/customField/{}/item'.format(card_id, field_id)
