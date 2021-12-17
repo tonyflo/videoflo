@@ -317,7 +317,19 @@ class Trello():
         self._create_checklist(card_id, 'hashtags')
         self._create_checklist(card_id, 'tags')
 
-        return card_id
+        return card_id, board_id
+
+    def add_filename_to_card(self, card_id, board_id, filename):
+        field = 'filename'
+        field_id = self._get_custom_field_id(board_id, field)
+        if field_id is None:
+            print('Trello custom field {} probably does not exist. Please run init.'.format(field))
+            return False
+
+        value_formatted = {'text': filename}
+        self._set_custom_field(card_id, field_id, field, value_formatted)
+
+        return True
 
     def get_checklist(self, checklist_ids, name):
         checklist_data = None
@@ -467,7 +479,7 @@ class Trello():
     def _set_custom_field(self, card_id, field_id, name, value):
         url = self.url + 'card/{}/customField/{}/item'.format(card_id, field_id)
         params = self.query
-        params['value'] = {'number': str(value)} # API wants str for numbers
+        params['value'] = value
         response = self._make_request('PUT', url, params, json=True)
         if response is None:
             print('Unable to set custom field: {} = {}'.format(name, value))
@@ -480,6 +492,28 @@ class Trello():
 
         return True
 
+    def _get_custom_fields(self, board_id):
+        url = self.url + 'boards/{}/customFields'.format(board_id)
+        params = self.query
+        response = self._make_request('GET', url, params)
+        if response is None:
+            print('Unable to get custom fields from Trello')
+            return None
+        fields = response.json()
+        return fields
+
+    def _get_custom_field_id(self, board_id, name):
+        fields = self._get_custom_fields(board_id)
+        if fields is None:
+            return None
+
+        for field in fields:
+            if name != field['name']:
+                continue
+            return field['id']
+
+        return None
+
     def set_render_stats(self, idea, stats):
         channel = idea.channel
         board_id = self._get_board(channel)
@@ -491,14 +525,10 @@ class Trello():
             print('Unable to determine the id for this Trello card')
             return False
 
-        url = self.url + 'boards/{}/customFields'.format(board_id)
-        params = self.query
-        response = self._make_request('GET', url, params)
-        if response is None:
-            print('Unable to get custom fields from Trello')
+        fields = self._get_custom_fields(board_id)
+        if fields is None:
             return False
 
-        fields = response.json()
         for field in fields:
             name = field['name']
             try:
@@ -506,5 +536,6 @@ class Trello():
             except KeyError:
                 continue # not all Trello custom fields are render stats
             field_id = field['id']
-            self._set_custom_field(card_id, field_id, name, value)
+            value_formatted = {'number': str(value)} # API wants str for numbers
+            self._set_custom_field(card_id, field_id, name, value_formatted)
 

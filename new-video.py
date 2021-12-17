@@ -14,12 +14,19 @@ def go():
     trello = Trello()
     if not trello.lists_exist(['Script'], idea.channel):
         return
-    card_id = trello.make_card(idea)
+    card_id, board_id = trello.make_card(idea)
+    if card_id is None or board_id is None:
+        return
+
+    if not trello.add_filename_to_card(card_id, board_id, idea.name):
+        trello.delete_card(card_id)
+        return
 
     idea_directory = idea.make_directory()
     if idea_directory is None:
         trello.delete_card(card_id)
         return
+
     idea.make_files()
     idea.make_directories()
 
