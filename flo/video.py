@@ -21,7 +21,11 @@ class Video():
         self.tags = metadata['tags']
         self.hashtags = metadata['hashtags']
         self.description = metadata['description']
+        self.privacyStatus = 'private'  # private initially
         self.publish_at = self._get_publish_time(metadata['scheduled'])
+        self.language = 'en_US' # hardcoded as English
+        self.license = 'youtube'
+        self.licensedContent = False # hardcoded as not licensed
 
     def _get_file_size(self, path):
          size = os.path.getsize(path)

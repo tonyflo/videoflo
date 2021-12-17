@@ -36,10 +36,17 @@ class Trello():
                 response = requests.request(method=method, url=url, json=params, headers=self.headers)
             else:
                 response = requests.request(method=method, url=url, params=params, headers=self.headers)
-            return response
+            if False:
+                print(response.request.url)
+                print(response.request.headers)
+            if response.ok:
+                return response
+            response.raise_for_status()
         except requests.exceptions.ConnectionError:
              print('Not connected to the internet')
              # TODO: this puts us out of sync with Trello
+        except requests.exceptions.HTTPError:
+            print('Error {}: {}'.format(response.status_code, response.reason))
         return None
 
 
@@ -134,7 +141,7 @@ class Trello():
 
         url = self.url + 'members/me/boards?fields=name&filter=open'
         params = self.query
-        response = self._make_request('GET', url, params)
+        response = self._make_request('GET', url, params, json=True)
         if response is None:
             return None
 
@@ -201,10 +208,27 @@ class Trello():
             list_id = lst['id']
 
         if list_id is None:
-            print('Unable to find {} board. Please create it.'.format(name))
+            print('Unable to find {} list. Please run init.'.format(name))
 
         return list_id
 
+    def _create_list(self, board_id, name):
+        url = self.url + 'lists'
+        params = self.query
+        params['name'] = '{}'.format(name)
+        params['idBoard'] = board_id
+        params['pos'] = 'bottom'
+        response = self._make_request('POST', url, params)
+        if response is None:
+            return None
+
+        lst = response.json()
+        if 'id' not in lst:
+            print('Something went wrong when creating the {} list'.format(name))
+            return None
+
+        print('Created the Trello list {}.'.format(name))
+        return lst
 
     def move_card(self, idea, list_name):
         channel = idea.channel
@@ -225,6 +249,8 @@ class Trello():
         params = self.query
         params['idList'] = destination_list_id
         response = self._make_request('PUT', url, params)
+        if response is None:
+            return False
 
         card = response.json()
         if 'id' not in card:
@@ -326,6 +352,8 @@ class Trello():
         url = self.url + 'lists/{}/cards'.format(list_id)
         params = self.query
         response = self._make_request('GET', url, params)
+        if response is None:
+            return []
 
         return response.json()
 
@@ -353,6 +381,8 @@ class Trello():
             params['name'] = name
             params['url'] = u
             response = self._make_request('POST', url, params)
+            if response is None:
+                break
             if 'id' in response.json():
                 continue
 
@@ -362,12 +392,21 @@ class Trello():
         url = self.url + 'cards/{}'.format(card_id)
         params = self.query
         response = self._make_request('DELETE', url, params)
+        if response is None:
+            print('Unable to delete card')
 
-    def lists_exist(self, names, channel):
+    def lists_exist(self, names, channel, create=False):
         board_id = self._get_board(channel)
+        if board_id is None:
+            return False
+
         url = self.url + 'boards/{}/lists'.format(board_id)
         params = self.query
-        response = self._make_request('GET', url, params)
+        params['filter'] = 'open'
+        params['fields'] = 'all'
+        response = self._make_request('GET', url, params, json=True)
+        if response is None:
+            return False
         lists = response.json()
 
         exist = True
@@ -375,7 +414,12 @@ class Trello():
             this_exists = any(lst['name'] == name for lst in lists)
             if not this_exists:
                 exist = False
-                print('Please create the Trello board called "{}"'.format(name))
+                if create is False:
+                    print('Trello list called "{}" does not exist. Please run init.'.format(name))
+                else:
+                    lst = self._create_list(board_id, name)
+                    if lst is None:
+                        break
 
         return exist
 
@@ -416,7 +460,10 @@ class Trello():
         fields = response.json()
         for field in fields:
             name = field['name']
-            value = stats[name]
+            try:
+                value = stats[name]
+            except KeyError:
+                continue # not all Trello custom fields are render stats
             field_id = field['id']
             self._set_custom_field(card_id, field_id, name, value)
 

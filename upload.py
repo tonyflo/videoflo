@@ -29,7 +29,7 @@ def get_video_file(path):
     return video_file
 
 # loop over directories tagged as ready for upload and check for required files
-def get_upload_dict(channel, trello):
+def get_upload_dict(channel, trello, limit):
     print('Checking videos for {}'.format(channel.name))
     uploadable = trello.get_list('Upload', channel)
     upload_dict = {}
@@ -86,6 +86,9 @@ def get_upload_dict(channel, trello):
 
         upload_dict[card_id] = video
 
+        if count == limit:
+            break
+
 
     total_upload_gb = round(total_upload_size / (1024 * 1024 * 1024), 3)
     print('Total size of upload: {} GB'.format(total_upload_gb))
@@ -100,7 +103,7 @@ def get_upload_dict(channel, trello):
     return {}
 
 # prepare uploads
-def do_uploads(upload_dict, trello):
+def do_uploads(upload_dict):
     upload_count = 0
     upload_total = len(upload_dict)
     start_time = datetime.now()
@@ -110,6 +113,7 @@ def do_uploads(upload_dict, trello):
         if video_id is not None:
             upload_count += 1
             update_tag('Backup', video.path)
+            trello = Trello()
             trello.move_card(video.idea, 'Scheduled')
             trello.attach_links_to_card(card_id, video_id)
     duration = datetime.now() - start_time
@@ -120,13 +124,17 @@ def go():
     args = flo.get_upload_arguments()
     channel = Channel(flo.config, args.channel)
     dry_run = args.dry_run
+    limit = args.limit if args.limit > 0 else 0
+
+    if limit > 0:
+        print("Limiting to {} video upload(s)".format(limit))
 
     trello = Trello()
     if not trello.lists_exist(['Upload', 'Scheduled'], channel):
         return
 
-    upload_dict = get_upload_dict(channel, trello)
+    upload_dict = get_upload_dict(channel, trello, limit)
     if not dry_run and len(upload_dict) > 0:
-        do_uploads(upload_dict, trello)
+        do_uploads(upload_dict)
 
 go()

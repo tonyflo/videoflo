@@ -37,6 +37,11 @@ class VideoFlo():
                             action='store_true',
                             required=False,
                             help="Do checks only. Don't upload")
+        parser.add_argument('--limit',
+                            type=int,
+                            default=0,
+                            required=False,
+                            help="Only upload this many videos")
 
     def _add_list_args(self, parser):
         parser.add_argument('-t', '--tags',

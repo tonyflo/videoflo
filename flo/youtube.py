@@ -96,9 +96,10 @@ def do_video_upload(youtube, video):
       description=video.description,
       tags=video.tags,
       categoryId=video.category,
+      defaultLanguage=video.language,
     ),
     status=dict(
-      privacyStatus='private',
+      privacyStatus=video.privacyStatus,
       publishAt=video.publish_at,
     )
   )
