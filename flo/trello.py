@@ -119,10 +119,18 @@ class Trello():
         for num, board in enumerate(boards, start=1):
             print(num, ': ', board['name'])
 
+        if len(boards) == 0:
+            print('You do not have any Trello boards yet. Please make one')
+            return None
+
         board_id = None
         while board_id is None:
             print('\nSelect the board associated with {}: '.format(channel.name))
-            x = int(input())
+            try:
+                x = int(input())
+            except ValueError:
+                print('\nInvalid choice. Try again.')
+                continue
 
             if x in range(1, len(boards)+1):
                 board_name = boards[x-1]['name']
@@ -149,6 +157,8 @@ class Trello():
 
         boards = response.json()
         board_id = self._have_user_pick_board(boards, channel)
+        if board_id is None:
+            return None
         success = self._save_board_id(board_id, channel)
 
         return board_id if success else None
