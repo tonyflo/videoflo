@@ -320,6 +320,9 @@ class Trello():
         return card_id, board_id
 
     def add_filename_to_card(self, card_id, board_id, filename):
+        if not self.is_premium_board(board_id):
+            return True # ok to return True here
+
         field = 'filename'
         field_id = self._get_custom_field_id(board_id, field)
         if field_id is None:
@@ -447,6 +450,10 @@ class Trello():
                   'filename': 'text',
         }
         board_id = self._get_board(channel)
+
+        if not self.is_premium_board(board_id):
+            return
+
         for name, kind in fields.items():
             success = self._add_custom_field(board_id, name, kind)
             if not success:
@@ -520,6 +527,9 @@ class Trello():
         if board_id is None:
             return False
 
+        if not self.is_premium_board(board_id):
+            return False
+
         card_id = self._get_card(idea)
         if card_id is None or card_id == '':
             print('Unable to determine the id for this Trello card')
@@ -539,3 +549,33 @@ class Trello():
             value_formatted = {'number': str(value)} # API wants str for numbers
             self._set_custom_field(card_id, field_id, name, value_formatted)
 
+    # determine if Custom Fields can be on this board
+    def is_premium_board(self, board_id):
+        is_premium = False
+
+        url = self.url + 'boards/{}'.format(board_id)
+        params = self.query
+        response = self._make_request('GET', url, params, json=True)
+        if response is None:
+            print('Unable to get board data')
+            return is_premium
+
+        board = response.json()
+        try:
+            organization_id = board['idOrganization']
+        except KeyError:
+            return is_premium # not premium board because this field doesn't exist
+
+        url = self.url + 'organizations/{}'.format(organization_id)
+        params = self.query
+        response = self._make_request('GET', url, params, json=True)
+        if response is None:
+            print('Unable to determine if organization of board')
+            return is_premium
+        organization = response.json()
+        try:
+            is_premium = any(item in organization['products'] for item in [110, 111, 119])
+        except:
+            print('Unable to determine if Custom Fields can be used on this board')
+
+        return is_premium
