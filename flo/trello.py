@@ -565,6 +565,7 @@ class Trello():
 
         url = self.url + 'boards/{}'.format(board_id)
         params = self.query
+        params['fields'] = 'idOrganization'
         response = self._make_request('GET', url, params, json=True)
         if response is None:
             print('Unable to get board data')
@@ -578,6 +579,7 @@ class Trello():
 
         url = self.url + 'organizations/{}'.format(organization_id)
         params = self.query
+        params['fields'] = 'products'
         response = self._make_request('GET', url, params, json=True)
         if response is None:
             print('Unable to determine if organization of board')
