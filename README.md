@@ -5,4 +5,4 @@ Videoflo is series of Python scripts to help automate your YouTube video product
 
 Not only will Videoflo eliminate many mundane aspects of video production, but it will also keep your projects organized throughout the entire process from the inception of an idea to a published upload.
 
-For a complete tutorial on how to install and use Videoflo, go to [videoflo.app](videoflo.app).
+For a complete tutorial on how to install and use Videoflo, go to [videoflo.app](https://videoflo.app).
