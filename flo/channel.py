@@ -11,6 +11,7 @@ class Channel:
         self.name = config[self.id]['name'] # proper name of channel
         self.path_name = config[self.id]['path'] # subdirectory for this channel
         self.schedule = self._get_schedule(config)
+        self.config = config
         try:
             self.timeline = config[self.id]['timeline'] # path to timeline
         except KeyError:
@@ -80,3 +81,14 @@ class Channel:
         with open(SETTINGSFILE, 'w') as configfile:
             config.write(configfile)
 
+    # get the channel's default description from the file as specified in the config
+    def get_default_description(self):
+        description_file = self.config[self.id]['description']
+        description = ''
+        try:
+            with open(description_file) as f:
+                description = f.read().strip()
+        except FileNotFoundError:
+            pass
+
+        return description

@@ -112,8 +112,11 @@ class Video():
 
     # call this function only after calling check_hashtags
     def format_description(self):
+        default = self.channel.get_default_description()
+        default = '\n\n' + default if default != '' else ''
         hashtags = '\n\n#' + ' #'.join(self.hashtags) if self.hashtags else ''
-        self.description = '{}{}'.format(self.description, hashtags)
+        self.description = '{}{}{}'.format(self.description, default, hashtags)
+        print(self.description)
 
     # check for description
     def check_description(self):
