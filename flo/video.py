@@ -116,7 +116,6 @@ class Video():
         default = '\n\n' + default if default != '' else ''
         hashtags = '\n\n#' + ' #'.join(self.hashtags) if self.hashtags else ''
         self.description = '{}{}{}'.format(self.description, default, hashtags)
-        print(self.description)
 
     # check for description
     def check_description(self):
