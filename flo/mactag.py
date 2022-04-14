@@ -16,7 +16,6 @@ if platform.system() == 'Darwin':
     USING_MAC = True
     import mac_tag
 
-
 # add tag to path
 def add_tag(tag, path, do_open=False):
     if not USING_MAC:
@@ -24,7 +23,12 @@ def add_tag(tag, path, do_open=False):
 
     mac_tag.add([tag], [path])
     if do_open:
-        call(["open", path])
+        open_dir(path)
+
+# open directory at path
+# TODO: test on Windows
+def open_dir(path):
+    call(["open", path])
 
 # update tag for path after removing all exitings tags
 def update_tag(tag, path, do_open=False):
