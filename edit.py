@@ -21,13 +21,14 @@ def go():
     if davinci.project_manager is None:
         return
 
-    davinci.create_project(idea)
+    is_new = davinci.open_project(idea)
     if davinci.project is None:
         return
 
-    davinci.import_timeline()
-    davinci.import_files()
-    davinci.workspace_setup()
+    if is_new:
+        davinci.import_timeline()
+        davinci.import_files()
+        davinci.workspace_setup()
 
 go()
 

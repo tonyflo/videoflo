@@ -83,8 +83,11 @@ class Channel:
 
     # get the channel's default description from the file as specified in the config
     def get_default_description(self):
-        description_file = self.config[self.id]['description']
         description = ''
+        try:
+            description_file = self.config[self.id]['description']
+        except KeyError:
+            return description
         try:
             with open(description_file) as f:
                 description = f.read().strip()

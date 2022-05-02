@@ -62,19 +62,30 @@ class Davinci():
             print('DaVinci Resolve probably not open')
 
     # create a DaVinci Resolve project
-    def create_project(self, idea):
+    def open_project(self, idea):
         # create the project
         self.idea = idea
-        project = self.project_manager.CreateProject(self.idea.name)
+        name = self.idea.name
+        is_new = True
+
+        # first try to create project
+        project = self.project_manager.CreateProject(name)
         if not project:
-            print('Unable to create the project. Does it already exist?')
-            return None
+            # then try to load the project
+            project = self.project_manager.LoadProject(name)
+            if not project:
+                print('Unable to create or load project: {}'.format(name))
+                return None
+            is_new = False
         self.project = project
 
-        # set project settings
-        for setting, value in self.idea.channel.settings.items():
-            name = 'timeline{}'.format(setting)
-            self.project.SetSetting(name, value)
+        if is_new:
+            # set project settings
+            for setting, value in self.idea.channel.settings.items():
+                name = 'timeline{}'.format(setting)
+                self.project.SetSetting(name, value)
+
+        return is_new
 
     # import files (video, audio, etc.) from project path
     def import_files(self):
