@@ -1,15 +1,7 @@
-# Valid case-sensitive tags are:
-# - Script
-# - Film
-# - Edit
-# - Render
-# - Upload
-# - Backup
-
+from flo.const import STAGES
 from subprocess import call
 
 # determine if we are on MacOS
-TAGS = ['Script', 'Film', 'Edit', 'Render', 'Upload', 'Backup']
 USING_MAC = False
 import platform
 if platform.system() == 'Darwin':

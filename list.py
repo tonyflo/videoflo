@@ -4,7 +4,8 @@ import operator
 import os
 from flo.channel import Channel
 from flo.videoflo import VideoFlo
-from flo.mactag import get_tags, TAGS
+from flo.mactag import get_tags
+from flo.const import STAGES
 
 def go():
     flo = VideoFlo()
@@ -19,7 +20,7 @@ def go():
 
     tags = get_tags(projects)
     count = 0
-    counts = {key: 0 for key in TAGS}
+    counts = {key: 0 for key in STAGES}
     verbose = True if type(args.tags) is list else False
     for k, v in sorted(tags.items(), key=operator.itemgetter(1, 0)):
         tag = v[0] if v else 'NOTAG'

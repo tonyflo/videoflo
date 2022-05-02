@@ -224,12 +224,12 @@ class Trello():
 
         return list_id
 
-    def _create_list(self, board_id, name):
+    def _create_list(self, board_id, name, pos):
         url = self.url + 'lists'
         params = self.query
         params['name'] = '{}'.format(name)
         params['idBoard'] = board_id
-        params['pos'] = 'bottom'
+        params['pos'] = pos
         response = self._make_request('POST', url, params)
         if response is None:
             return None
@@ -437,14 +437,14 @@ class Trello():
         lists = response.json()
 
         exist = True
-        for name in names:
+        for pos, name in enumerate(names):
             this_exists = any(lst['name'] == name for lst in lists)
             if not this_exists:
                 if create is False:
                     exist = False
                     print('Trello list called "{}" does not exist. Please run init.'.format(name))
                 else:
-                    lst = self._create_list(board_id, name)
+                    lst = self._create_list(board_id, name, pos + 1)
                     if lst is None:
                         exist = False
                         break

@@ -4,8 +4,7 @@ import os
 import argparse
 import configparser
 from flo.channel import Channel
-from flo.const import SETTINGSFILE
-from flo.mactag import TAGS
+from flo.const import SETTINGSFILE, STAGES
 
 
 def dir_path(string):
@@ -45,8 +44,8 @@ class VideoFlo():
 
     def _add_list_args(self, parser):
         parser.add_argument('-t', '--tags',
-                            choices=TAGS,
-                            default=TAGS,
+                            choices=STAGES,
+                            default=STAGES,
                             required=False,
                             help='Tag associated with the video''s state')
 

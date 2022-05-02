@@ -112,7 +112,7 @@ def do_uploads(upload_dict):
         video_id = video.upload()
         if video_id is not None:
             upload_count += 1
-            update_tag('Backup', video.path)
+            update_tag('Scheduled', video.path)
             trello = Trello()
             trello.move_card(video.idea, 'Scheduled')
             trello.attach_links_to_card(card_id, video_id)

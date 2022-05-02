@@ -3,7 +3,7 @@
 from flo.videoflo import VideoFlo
 from flo.trello import Trello
 from flo.channel import Channel
-from flo.const import TRELLO_LISTS
+from flo.const import STAGES
 
 
 def go():
@@ -12,7 +12,7 @@ def go():
     channel = Channel(flo.config, args.channel)
 
     trello = Trello()
-    if not trello.lists_exist(TRELLO_LISTS, channel, create=True):
+    if not trello.lists_exist(STAGES, channel, create=True):
         return
 
     trello.add_custom_fields(channel)
