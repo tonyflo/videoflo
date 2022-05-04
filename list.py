@@ -12,7 +12,13 @@ def go():
     args = flo.get_list_arguments()
     channel = Channel(flo.config, args.channel)
     projects = []
-    for item in os.listdir(channel.path):
+    try:
+        plist = os.listdir(channel.path)
+    except FileNotFoundError:
+        print("The path {} is not accessible".format(channel.path))
+        return
+
+    for item in plist:
         path = os.path.join(channel.path, item)
         if not os.path.isdir(path):
             continue
