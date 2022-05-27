@@ -180,7 +180,10 @@ class Davinci():
         jobid = self.project.GetRenderJobs()[1]['JobId']
         while(self.project.IsRenderingInProgress()):
             time.sleep(10)
-            render_status = self.project.GetRenderJobStatus(jobid)
+            try:
+                render_status = self.project.GetRenderJobStatus(jobid)
+            except TypeError:
+                print('Uh oh. Did DaVinci Resolve crash?')
             percent = render_status['CompletionPercentage']
             print('...{}% complete'.format(percent))
 
