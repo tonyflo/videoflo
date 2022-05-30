@@ -13,6 +13,7 @@ class Idea():
         self.name = None
         self.channel = None
         self.path = None
+        self.offline = False
 
     # instantiate an idea object from command line arguments
     def read_user_input(self, flo):
@@ -20,6 +21,7 @@ class Idea():
         self.channel = Channel(flo.config, args.channel)
         self.name = args.name
         self.path = self._get_idea_directory(args.path)
+        self.offline = args.offline
 
     # instantiate an idea object given a name and channel
     def from_project(self, project_name, channel):

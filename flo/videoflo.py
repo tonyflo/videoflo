@@ -31,6 +31,12 @@ class VideoFlo():
                             required=True,
                             help='Channel associated with the video')
 
+    def _add_offline_arg(self, parser):
+        parser.add_argument('--offline',
+                            action='store_true',
+                            required=False,
+                            help='Work offline with no internet access')
+
     def _add_upload_args(self, parser):
         parser.add_argument('--dry-run',
                             action='store_true',
@@ -57,11 +63,18 @@ class VideoFlo():
         parser.add_argument('-p', '--path', type=dir_path,
                             help='Destination directory')
         self._add_channel_arg(parser)
+        self._add_offline_arg(parser)
         args = parser.parse_args()
         return args
 
-    # command line arguments for a batch of videos for a channel
     def get_channel_arguments(self):
+        parser = argparse.ArgumentParser()
+        self._add_channel_arg(parser)
+        self._add_offline_arg(parser)
+        args = parser.parse_args()
+        return args
+
+    def get_init_arguments(self):
         parser = argparse.ArgumentParser()
         self._add_channel_arg(parser)
         args = parser.parse_args()
@@ -71,6 +84,7 @@ class VideoFlo():
         parser = argparse.ArgumentParser()
         self._add_channel_arg(parser)
         self._add_list_args(parser)
+        self._add_offline_arg(parser)
         args = parser.parse_args()
         return args
 
@@ -78,6 +92,12 @@ class VideoFlo():
         parser = argparse.ArgumentParser()
         self._add_channel_arg(parser)
         self._add_upload_args(parser)
+        args = parser.parse_args()
+        return args
+
+    def get_finish_edit_arguments(self):
+        parser = argparse.ArgumentParser()
+        self._add_offline_arg(parser)
         args = parser.parse_args()
         return args
 

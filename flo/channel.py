@@ -1,7 +1,8 @@
 # Channel object
 
 import os
-from flo.const import SETTINGSFILE
+from pathlib import Path
+from flo.const import SETTINGSFILE, CARDFILE, STAGEFILE, STAGES
 
 
 class Channel:
@@ -95,3 +96,26 @@ class Channel:
             pass
 
         return description
+
+    def find_path_for_id(self):
+        channel_path = Path(self.path)
+        for card_file in list(channel_path.rglob(CARDFILE)):
+            with open(card_file) as f:
+                if self.id != f.read().strip():
+                    continue
+                path = os.path.dirname(card_file)
+                return path
+
+        return None
+
+    def get_list(self, stage_name):
+        items = []
+        channel_path = Path(self.path)
+        for stage_file in list(channel_path.rglob(STAGEFILE)):
+            with open(stage_file) as f:
+                stage = f.read().strip()
+                if stage == stage_name:
+                    path = os.path.dirname(stage_file)
+                    items.append(path)
+        return items
+

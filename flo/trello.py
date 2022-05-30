@@ -5,7 +5,6 @@ import json
 import requests
 import webbrowser
 import configparser
-from pathlib import Path
 from datetime import datetime, timedelta
 from flo.const import CARDFILE, SETTINGSFILE, DATE_FORMAT
 
@@ -36,21 +35,21 @@ class Trello():
                 response = requests.request(method=method, url=url, json=params, headers=self.headers)
             else:
                 response = requests.request(method=method, url=url, params=params, headers=self.headers)
-            if False:
+            if False: # TODO
                 print(response.request.url)
                 print(response.request.headers)
             if response.ok:
                 return response
             response.raise_for_status()
         except requests.exceptions.ConnectionError:
-             print('Not connected to the internet')
-             # TODO: this potentially puts us out of sync with Trello
+             print('''Not connected to the internet.
+ • Try again with the --offline argument, if supported.
+ • Next time you have internet access, use sync.py to sync your offline work.''')
         except requests.exceptions.HTTPError:
             if response.status_code == 409: # 409=conflict, likely a duplicate item (already exists)... let caller handle
                 return response
             print('Error {}: {}'.format(response.status_code, response.reason))
         return None
-
 
     # save the trello token to the config file and to this object
     def _save_trello_token(self, token):
@@ -376,25 +375,23 @@ class Trello():
         if list_id is None:
             return False
 
+        items = []
         url = self.url + 'lists/{}/cards'.format(list_id)
         params = self.query
         response = self._make_request('GET', url, params)
         if response is None:
-            return []
+            return items
 
-        return response.json()
+        for item in response.json():
+            card_id = item['id']
+            name = item['name']
+            path = channel.find_path_for_id()
+            if path is None:
+                print('Could not find local path for {}'.format(name))
+                return [] # something's wrong. get return to caller
+            items.append(item)
 
-    def find_path_for_id(self, card_id, channel):
-        channel_path = Path(channel.path)
-        for card_file in list(channel_path.rglob(CARDFILE)):
-            with open(card_file) as f:
-                if card_id != f.read().strip():
-                    continue
-                path = os.path.dirname(card_file)
-                return path
-
-        return None
-
+        return items
 
     def attach_links_to_card(self, card_id, video_id):
         url = self.url + 'cards/{}/attachments'.format(card_id)

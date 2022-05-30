@@ -32,13 +32,14 @@ def go():
         davinci.import_files()
         davinci.workspace_setup()
 
-    trello = Trello()
-    if not trello.lists_exist(['Finish'], idea.channel):
-        return
+    if not idea.offline:
+        trello = Trello()
+        if not trello.lists_exist(['Finish'], idea.channel):
+            return
 
-    success = trello.move_card(idea, 'Finish')
-    if not success:
-        return
+        success = trello.move_card(idea, 'Finish')
+        if not success:
+            return
 
     update_tag('Finish', idea.path)
 

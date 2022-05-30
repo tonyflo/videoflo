@@ -29,13 +29,15 @@ def go():
         print('Directory for {} not found'.format(project_name))
         return
 
-    trello = Trello()
-    if not trello.lists_exist(['Render'], idea.channel):
-        return
+    args = flo.get_finish_edit_arguments()
+    if not args.offline:
+        trello = Trello()
+        if not trello.lists_exist(['Render'], idea.channel):
+            return
 
-    success = trello.move_card(idea, 'Render')
-    if not success:
-        return
+        success = trello.move_card(idea, 'Render')
+        if not success:
+            return
 
     davinci.export_project(idea)
     update_tag('Render', idea.path)

@@ -10,22 +10,15 @@ from flo.mactag import update_tag
 from datetime import datetime
 
 # loop over videos ready to be rendered
-def loop(channel, davinci, trello):
-    renderable = trello.get_list('Render', channel)
+def loop(channel, davinci, trello, args, renderable):
+
     total = len(renderable)
     print('Rendering {} videos for {}'.format(total, channel.name))
 
     counter = 0
     finished = 0
     start_time = datetime.now()
-    for item in renderable:
-        card_id = item['id']
-        name = item['name']
-        path = trello.find_path_for_id(card_id, channel)
-        if path is None:
-            print('Could not find local path for {}'.format(name))
-            continue
-
+    for path in renderable:
         counter = counter + 1
         project_name = os.path.basename(path)
         idea = Idea()
@@ -37,17 +30,29 @@ def loop(channel, davinci, trello):
         davinci.load_project(idea)
         print('Rendering {}/{} ({})'.format(counter, total, idea.name))
         stats = davinci.render_video()
-        if stats['success']:
+        success = stats['success']
+        if success:
             update_tag('Upload', idea.path)
-            success = trello.move_card(idea, 'Upload')
-            trello.set_render_stats(idea, stats)
+            if args.offline:
+                pass# TODO: save render stats locally
+            else:
+                success = trello.move_card(idea, 'Upload')
+                trello.set_render_stats(idea, stats)
         finished = finished + 1 if success else finished
 
-    if total == 0:
-        print('Nothing to render')
+    duration = datetime.now() - start_time
+    print('Rendered {}/{} videos in {}'.format(finished, total, duration))
+
+def _get_render_list(channel, trello, args):
+    renderable = []
+    if args.offline:
+        renderable = channel.get_list('Render')
     else:
-        duration = datetime.now() - start_time
-        print('Rendered {}/{} videos in {}'.format(finished, total, duration))
+        if not trello.lists_exist(['Render', 'Upload'], channel):
+            return None
+        renderable = trello.get_list('Render', channel)
+
+    return renderable
 
 def go():
     davinci = Davinci()
@@ -60,9 +65,11 @@ def go():
     channel = Channel(flo.config, args.channel)
 
     trello = Trello()
-    if not trello.lists_exist(['Render', 'Upload'], channel):
+    renderable = _get_render_list(channel, trello, args)
+    if renderable is None or len(renderable) == 0:
+        print('Nothing to render')
         return
 
-    loop(channel, davinci, trello)
+    loop(channel, davinci, trello, args, renderable)
 
 go()

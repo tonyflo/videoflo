@@ -1,6 +1,7 @@
 # Constants
 
 CARDFILE = '.card'
+STAGEFILE = '.stage'
 SETTINGSFILE = 'settings.ini'
 STAGES = ['Script', 'Film', 'Edit', 'Finish', 'Render', 'Upload', 'Scheduled']
 

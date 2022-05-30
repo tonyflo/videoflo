@@ -8,7 +8,7 @@ from flo.const import STAGES
 
 def go():
     flo = VideoFlo()
-    args = flo.get_channel_arguments()
+    args = flo.get_init_arguments()
     channel = Channel(flo.config, args.channel)
 
     trello = Trello()
