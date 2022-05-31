@@ -74,6 +74,17 @@ class VideoFlo():
         args = parser.parse_args()
         return args
 
+    def get_render_arguments(self):
+        parser = argparse.ArgumentParser()
+        self._add_channel_arg(parser)
+        parser.add_argument('--preview',
+                            action='store_true',
+                            required=False,
+                            help='Render a non-final version of the video')
+        self._add_offline_arg(parser)
+        args = parser.parse_args()
+        return args
+
     def get_init_arguments(self):
         parser = argparse.ArgumentParser()
         self._add_channel_arg(parser)

@@ -10,11 +10,15 @@ from flo.mactag import update_tag
 from datetime import datetime
 
 # loop over videos ready to be rendered
-def loop(channel, davinci, trello, args, renderable):
+def loop(channel, trello, args, renderable):
+
+    davinci = Davinci()
+    if davinci.resolve is None:
+        return
+    davinci.open_deliver_page()
 
     total = len(renderable)
     print('Rendering {} videos for {}'.format(total, channel.name))
-
     counter = 0
     finished = 0
     start_time = datetime.now()
@@ -31,7 +35,7 @@ def loop(channel, davinci, trello, args, renderable):
         print('Rendering {}/{} ({})'.format(counter, total, idea.name))
         stats = davinci.render_video()
         success = stats['success']
-        if success:
+        if success and not args.preview:
             update_tag('Upload', idea.path)
             if args.offline:
                 pass# TODO: save render stats locally
@@ -55,13 +59,8 @@ def _get_render_list(channel, trello, args):
     return renderable
 
 def go():
-    davinci = Davinci()
-    if davinci.resolve is None:
-        return
-    davinci.open_deliver_page()
-
     flo = VideoFlo()
-    args = flo.get_channel_arguments()
+    args = flo.get_render_arguments()
     channel = Channel(flo.config, args.channel)
 
     trello = Trello()
@@ -70,6 +69,6 @@ def go():
         print('Nothing to render')
         return
 
-    loop(channel, davinci, trello, args, renderable)
+    loop(channel, trello, args, renderable)
 
 go()

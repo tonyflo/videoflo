@@ -29,8 +29,8 @@ def go():
 
     if is_new:
         davinci.import_timeline()
-        davinci.import_files()
-        davinci.workspace_setup()
+    davinci.workspace_setup()
+    davinci.import_files()
 
     if not idea.offline:
         trello = Trello()

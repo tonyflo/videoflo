@@ -184,6 +184,7 @@ class Davinci():
                 render_status = self.project.GetRenderJobStatus(jobid)
             except TypeError:
                 print('Uh oh. Did DaVinci Resolve crash?')
+                return stats
             percent = render_status['CompletionPercentage']
             print('...{}% complete'.format(percent))
 
