@@ -1,10 +1,11 @@
 # Video idea object
 
 import os
+import json
 from glob import glob
 from shutil import move
 from flo.channel import Channel
-from flo.const import CARDFILE
+from flo.const import CARDFILE, STATSFILE
 
 
 class Idea():
@@ -91,4 +92,9 @@ class Idea():
             move(src, screens_path)
             name = os.path.basename(src)
             print('Moved {}'.format(name))
+
+    def save_render_stats(self, stats):
+        stats_file = os.path.join(self.path, STATSFILE)
+        with open(stats_file, 'w') as f:
+            f.write(json.dumps(stats))
 

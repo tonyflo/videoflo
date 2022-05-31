@@ -36,10 +36,9 @@ def loop(channel, trello, args, renderable):
         stats = davinci.render_video()
         success = stats['success']
         if success and not args.preview:
+            idea.save_render_stats(stats)
             update_tag('Upload', idea.path)
-            if args.offline:
-                pass# TODO: save render stats locally
-            else:
+            if not args.offline:
                 success = trello.move_card(idea, 'Upload')
                 trello.set_render_stats(idea, stats)
         finished = finished + 1 if success else finished
