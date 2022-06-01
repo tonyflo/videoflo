@@ -97,11 +97,11 @@ class Channel:
 
         return description
 
-    def find_path_for_id(self):
+    def find_path_for_id(self, card_id):
         channel_path = Path(self.path)
         for card_file in list(channel_path.rglob(CARDFILE)):
             with open(card_file) as f:
-                if self.id != f.read().strip():
+                if card_id != f.read().strip():
                     continue
                 path = os.path.dirname(card_file)
                 return path

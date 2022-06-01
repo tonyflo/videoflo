@@ -152,8 +152,9 @@ class Davinci():
 
     # render video
     def render_video(self):
-        stats = {'success': False}
         start_time = datetime.now()
+        start_time_str = start_time.strftime('%Y-%m-%d %H:%M:%S') # TODO UTC
+        stats = {'success': False, 'Date': start_time_str}
 
         if self.project is None:
             print('Could not load DaVinci project {}'.format(self.idea.name))
@@ -179,14 +180,14 @@ class Davinci():
 
         jobid = self.project.GetRenderJobs()[1]['JobId']
         while(self.project.IsRenderingInProgress()):
-            time.sleep(10)
+            time.sleep(1)
             try:
                 render_status = self.project.GetRenderJobStatus(jobid)
             except TypeError:
                 print('Uh oh. Did DaVinci Resolve crash?')
                 return stats
             percent = render_status['CompletionPercentage']
-            print('...{}% complete'.format(percent))
+            print(' Progress: {}%'.format(percent), end='\r')
 
         render_status = self.project.GetRenderJobStatus(jobid)
         job_status = render_status['JobStatus']
@@ -195,10 +196,10 @@ class Davinci():
             self._delete_all_render_jobs()
             return stats
 
-        difference = datetime.now() - start_time
-        print('Render time was {}'.format(difference))
+        duration = datetime.now() - start_time
+        print('Render time was {}'.format(duration))
 
-        stats['RenderTime'] = round(difference.total_seconds(), 2)
+        stats['RenderTime'] = round(duration.total_seconds(), 2)
         stats = self._set_stats(stats)
 
         self._delete_all_render_jobs()

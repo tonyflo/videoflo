@@ -47,7 +47,7 @@ def get_upload_dict(channel, trello, limit):
         }
 
         card_id = item['id']
-        path = trello.find_path_for_id(card_id, channel)
+        path = channel.find_path_for_id(card_id)
         if path is None:
             print('Could not find local path for {}'.format(name))
             continue
