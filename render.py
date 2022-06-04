@@ -33,7 +33,11 @@ def loop(channel, trello, args, renderable):
 
         davinci.load_project(idea)
         print('Rendering {}/{} ({})'.format(counter, total, idea.name))
-        stats = davinci.render_video()
+        try:
+            stats = davinci.render_video()
+        except KeyboardInterrupt:
+            print('\nTerminating renders')
+            break
         success = stats['success']
         if success and not args.preview:
             idea.save_render_stats(stats)
@@ -53,7 +57,7 @@ def _get_render_list(channel, trello, args):
     else:
         if not trello.lists_exist(['Render', 'Upload'], channel):
             return None
-        renderable = trello.get_list('Render', channel)
+        renderable = [channel.find_path_for_id(item['id']) for item in trello.get_list('Render', channel)]
 
     return renderable
 

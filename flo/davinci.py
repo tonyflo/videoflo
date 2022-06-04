@@ -58,7 +58,7 @@ class Davinci():
     def set_project_manager(self):
         try:
             self.project_manager = self.resolve.GetProjectManager()
-        except AttributeError:
+        except (AttributeError, TypeError):
             print('DaVinci Resolve probably not open')
 
     # create a DaVinci Resolve project
@@ -180,12 +180,16 @@ class Davinci():
 
         jobid = self.project.GetRenderJobs()[1]['JobId']
         while(self.project.IsRenderingInProgress()):
-            time.sleep(1)
+            try:
+                time.sleep(1)
+            except KeyboardInterrupt:
+                self.project.StopRendering()
+                raise KeyboardInterrupt
             try:
                 render_status = self.project.GetRenderJobStatus(jobid)
             except TypeError:
                 print('Uh oh. Did DaVinci Resolve crash?')
-                return stats
+                raise KeyboardInterrupt # hack
             percent = render_status['CompletionPercentage']
             print(' Progress: {}%'.format(percent), end='\r')
 
