@@ -98,3 +98,11 @@ class Idea():
         with open(stats_file, 'w') as f:
             f.write(json.dumps(stats))
 
+    def get_render_stats(self):
+        stats = {}
+        stats_file = os.path.join(self.path, STATSFILE)
+        with open(stats_file) as f:
+            stats = json.load(f)
+
+        return stats
+

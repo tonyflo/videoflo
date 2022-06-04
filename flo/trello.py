@@ -5,11 +5,8 @@ import json
 import requests
 import webbrowser
 import configparser
-from pathlib import Path
 from datetime import datetime, timedelta
 from flo.const import CARDFILE, SETTINGSFILE, DATE_FORMAT
-from flo.const import STAGES, STAGEFILE
-from flo.idea import Idea
 
 
 class Trello():
@@ -51,7 +48,7 @@ class Trello():
         except requests.exceptions.HTTPError:
             if response.status_code == 409: # 409=conflict, likely a duplicate item (already exists)... let caller handle
                 return response
-            print('Error {}: {}'.format(response.status_code, response.reason))
+            print('Trello Error {}: {}'.format(response.status_code, response.reason))
         return None
 
     # save the trello token to the config file and to this object
@@ -166,7 +163,7 @@ class Trello():
         return board_id if success else None
 
     def _get_card(self, idea):
-        card = None
+        card_id = None
         card_file = os.path.join(idea.path, CARDFILE)
         with open(card_file) as f:
             card_id = f.readline().strip()
@@ -592,42 +589,44 @@ class Trello():
 
         return is_premium
 
-    def sync(self, channel):
-        channel_path = Path(channel.path)
-        for stage_file in list(channel_path.rglob(STAGEFILE)):
-            project_name = os.path.basename(os.path.dirname(stage_file))
-            with open(stage_file) as f:
-                stage = f.read().strip()
-                if stage not in STAGES:
-                    print("Invalid name '{}' at {}".format(stage, stage_file))
-                    continue
+    def _get_list_of_card(self, card_id):
+        url = self.url + 'cards/{}/list'.format(card_id)
+        params = self.query
+        response = self._make_request('GET', url, params)
+        if response is None:
+            return None
+        res = response.json()
 
-            # TODO: this will move a card from EDIT to EDIT, for example
-            print('Move {} to {}'.format(project_name, stage))
-            success=True
-            #success = trello.move_card(idea, stage)
+        return res['name']
+
+    def sync(self, idea, stage):
+        proj_name = idea.name
+        card_id = self._get_card(idea)
+        if card_id == None or card_id == '':
+            # card does not exist. make it.  it was made offline
+            card_id, board_id = self.make_card(idea)
+            if card_id is None or board_id is None:
+                return
+            if not self.add_filename_to_card(card_id, board_id, idea.name):
+                self.delete_card(card_id)
+                return
+            self.save_card(card_id, idea)
+            print('Created {}'.format(proj_name))
+        else:
+            old_stage = self._get_list_of_card(card_id)
+            if old_stage == None:
+                print('Trello card for {} does not exist'.format(proj_name))
+                return
+            if old_stage == stage:
+                return # stage did not change, nothing to sync
+
+            success = self.move_card(idea, stage)
             if not success:
-                print("ERROR: Unable to sync {}".format(project_name))
-                continue
+                print("ERROR: Unable to sync {} from {} to {}".format(proj_name, old_stage, stage))
+                return
+            print('Moved {} from {} to {}'.format(proj_name, old_stage, stage))
 
-            # instantiate idea object
-            idea = Idea()
-            idea.from_project(project_name, channel)
-            if not idea.exists():
-                print('Directory for {} not found'.format(path))
-                continue
-
-            if 'SCRIPT' == stage:
-                pass
-                #card_id, board_id = self.make_card(idea)
-                #if card_id is None or board_id is None:
-                #    continue
-                #if not self.add_filename_to_card(card_id, board_id, idea.name):
-                #    self.delete_card(card_id)
-                #    return
-                #self.save_card(card_id, idea)
-
-            if 'UPLOAD' == stage:
-                # TODO
-                pass
+        if 'Upload' == stage:
+            stats = idea.get_render_stats()
+            self.set_render_stats(idea, stats)
 
