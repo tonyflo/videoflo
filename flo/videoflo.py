@@ -91,6 +91,20 @@ class VideoFlo():
         args = parser.parse_args()
         return args
 
+    def get_sync_arguments(self):
+        parser = argparse.ArgumentParser()
+        self._add_channel_arg(parser)
+        parser.add_argument('--dry-run',
+                            action='store_true',
+                            required=False,
+                            help="Don't actually sync, but show what will be synced")
+        parser.add_argument('-v', '--verbose',
+                            action='store_true',
+                            required=False,
+                            help="Verbose output of each video status regardless of offline changes")
+        args = parser.parse_args()
+        return args
+
     def get_list_arguments(self):
         parser = argparse.ArgumentParser()
         self._add_channel_arg(parser)

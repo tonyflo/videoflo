@@ -11,11 +11,17 @@ from flo.const import STAGES, STAGEFILE
 
 def go():
     flo = VideoFlo()
-    args = flo.get_init_arguments()
+    args = flo.get_sync_arguments()
+    dry_run = args.dry_run
+    verbose = args.verbose
     channel = Channel(flo.config, args.channel)
 
+    if dry_run:
+        print('THIS IS JUST A DRY RUN')
+
     channel_path = Path(channel.path)
-    for stage_file in list(channel_path.rglob(STAGEFILE)):
+    stage_file_list = list(channel_path.rglob(STAGEFILE))
+    for stage_file in stage_file_list:
         proj_name = os.path.basename(os.path.dirname(stage_file))
         with open(stage_file) as f:
             stage = f.read().strip()
@@ -30,6 +36,11 @@ def go():
             print('Directory for {} not found'.format(path))
             continue
         trello = Trello()
-        trello.sync(idea, stage)
+        trello.sync(idea, stage, dry_run, verbose)
+
+    if len(stage_file_list) == 0:
+        print('No videos found for {}'.format(channel.name))
+    elif dry_run:
+        print('THIS WAS JUST A DRY RUN')
 
 go()

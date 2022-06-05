@@ -301,11 +301,11 @@ class Trello():
         channel = idea.channel
         board_id = self._get_board(channel)
         if board_id is None:
-            return None
+            return None, None
 
         list_id = self._get_list(board_id, 'Script')
         if list_id is None:
-            return None
+            return None, None
 
         schedule = idea.channel.schedule
         due_date = self._get_next_due_date(board_id, schedule)
@@ -316,12 +316,12 @@ class Trello():
         due_date = due_date.isoformat() + 'Z'
         card = self._create_card(list_id, idea, due_date)
         if card is None:
-            return None
+            return None, None
 
         card_id = card['id']
         if card_id is None or card_id == '':
             print('Invalid card id')
-            return None
+            return None, None
 
         self._create_checklist(card_id, 'hashtags')
         self._create_checklist(card_id, 'tags')
@@ -599,34 +599,38 @@ class Trello():
 
         return res['name']
 
-    def sync(self, idea, stage):
+    def sync(self, idea, stage, dry_run, verbose):
         proj_name = idea.name
         card_id = self._get_card(idea)
         if card_id == None or card_id == '':
-            # card does not exist. make it.  it was made offline
-            card_id, board_id = self.make_card(idea)
-            if card_id is None or board_id is None:
-                return
-            if not self.add_filename_to_card(card_id, board_id, idea.name):
-                self.delete_card(card_id)
-                return
-            self.save_card(card_id, idea)
-            print('Created {}'.format(proj_name))
+            if not dry_run:
+                # card does not exist. make it.  it was made offline
+                card_id, board_id = self.make_card(idea)
+                if card_id is None or board_id is None:
+                    return
+                if not self.add_filename_to_card(card_id, board_id, idea.name):
+                    self.delete_card(card_id)
+                    return
+                self.save_card(card_id, idea)
+            print('{} was created'.format(proj_name))
         else:
             old_stage = self._get_list_of_card(card_id)
             if old_stage == None:
-                print('Trello card for {} does not exist'.format(proj_name))
+                print('WARN: Trello card for {} does not exist'.format(proj_name))
                 return
             if old_stage == stage:
+                if verbose:
+                    print('{} remains in {}'.format(proj_name, stage))
                 return # stage did not change, nothing to sync
 
-            success = self.move_card(idea, stage)
-            if not success:
-                print("ERROR: Unable to sync {} from {} to {}".format(proj_name, old_stage, stage))
-                return
-            print('Moved {} from {} to {}'.format(proj_name, old_stage, stage))
+            if not dry_run:
+                success = self.move_card(idea, stage)
+                if not success:
+                    print("ERROR: Unable to sync {} from {} to {}".format(proj_name, old_stage, stage))
+                    return
+            print('{} was moved from {} to {}'.format(proj_name, old_stage, stage))
 
-        if 'Upload' == stage:
+        if 'Upload' == stage and not dry_run:
             stats = idea.get_render_stats()
             self.set_render_stats(idea, stats)
 
