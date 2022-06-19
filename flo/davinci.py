@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import warnings
 from pathlib import Path
 from datetime import datetime
 
@@ -8,7 +9,10 @@ from datetime import datetime
 class Davinci():
 
     def __init__(self):
-        self.resolve = self._get_resolve()
+        with warnings.catch_warnings():
+            # fusionscript is dynamically loaded and contains SyntaxWarning, so let's ignore it
+            warnings.simplefilter('ignore')
+            self.resolve = self._get_resolve()
         if self.resolve is None:
             print('Is DaVinci Resolve open?')
         self.project = None
