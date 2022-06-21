@@ -23,7 +23,6 @@ class Trello():
             self.token = self.config.get('trello', 'token')
         except configparser.NoOptionError:
             self.token = None
-        self.query = self._authorize()
 
         self.url = 'https://api.trello.com/1/'
         self.headers = {"Accept": "application/json"}
@@ -149,7 +148,7 @@ class Trello():
             pass
 
         url = self.url + 'members/me/boards?fields=name&filter=open'
-        params = self.query
+        params = self._authorize()
         response = self._make_request('GET', url, params, json=True)
         if response is None:
             return None
@@ -177,7 +176,7 @@ class Trello():
             return None
 
         url = self.url + 'boards/{}/cards/open'.format(board_id)
-        params = self.query
+        params = self._authorize()
         params['fields'] = 'due'
         response = self._make_request('GET', url, params)
         if response is None:
@@ -205,7 +204,7 @@ class Trello():
         list_id = None
         url = self.url + 'boards/{}/lists'.format(board_id)
 
-        params = self.query
+        params = self._authorize()
         params['filter'] = 'open'
         params['fields'] = 'all'
         response = self._make_request('GET', url, params)
@@ -225,7 +224,7 @@ class Trello():
 
     def _create_list(self, board_id, name, pos):
         url = self.url + 'lists'
-        params = self.query
+        params = self._authorize()
         params['name'] = '{}'.format(name)
         params['idBoard'] = board_id
         params['pos'] = pos
@@ -257,7 +256,7 @@ class Trello():
             return False
 
         url = self.url + 'cards/{}'.format(card_id)
-        params = self.query
+        params = self._authorize()
         params['idList'] = destination_list_id
         response = self._make_request('PUT', url, params)
         if response is None:
@@ -272,7 +271,7 @@ class Trello():
 
     def _create_checklist(self, card_id, name):
         url = self.url + 'cards/{}/checklists'.format(card_id)
-        params = self.query
+        params = self._authorize()
         params['name'] = name
         response = self._make_request('POST', url, params)
         if response is None:
@@ -281,7 +280,7 @@ class Trello():
 
     def _create_card(self, list_id, idea, due_date):
         url = self.url + 'cards'
-        params = self.query
+        params = self._authorize()
         params['idList'] = list_id
         params['name'] = idea.name
         params['due'] = due_date
@@ -349,7 +348,7 @@ class Trello():
         for cid in checklist_ids:
             url = self.url + 'checklists/{}'.format(cid)
 
-            params = self.query
+            params = self._authorize()
             params['checkItem_fields'] = 'name,state'
             response = self._make_request('GET', url, params)
             if response is None:
@@ -377,7 +376,7 @@ class Trello():
 
         items = []
         url = self.url + 'lists/{}/cards'.format(list_id)
-        params = self.query
+        params = self._authorize()
         response = self._make_request('GET', url, params)
         if response is None:
             return items
@@ -401,7 +400,7 @@ class Trello():
         }
         for name, link in attachments.items():
             u = link.format(video_id)
-            params = self.query
+            params = self._authorize()
             params['name'] = name
             params['url'] = u
             response = self._make_request('POST', url, params)
@@ -414,7 +413,7 @@ class Trello():
 
     def delete_card(self, card_id):
         url = self.url + 'cards/{}'.format(card_id)
-        params = self.query
+        params = self._authorize()
         response = self._make_request('DELETE', url, params)
         if response is None:
             print('Unable to delete card')
@@ -425,7 +424,7 @@ class Trello():
             return False
 
         url = self.url + 'boards/{}/lists'.format(board_id)
-        params = self.query
+        params = self._authorize()
         params['filter'] = 'open'
         params['fields'] = 'all'
         response = self._make_request('GET', url, params, json=True)
@@ -468,7 +467,7 @@ class Trello():
 
     def _add_custom_field(self, board_id, field_name, field_type):
         url = self.url + 'customFields'
-        params = self.query
+        params = self._authorize()
         params['idModel'] = board_id
         params['modelType'] = 'board'
         params['name'] = field_name
@@ -492,7 +491,7 @@ class Trello():
 
     def _set_custom_field(self, card_id, field_id, name, value):
         url = self.url + 'card/{}/customField/{}/item'.format(card_id, field_id)
-        params = self.query
+        params = self._authorize()
         params['value'] = value
         response = self._make_request('PUT', url, params, json=True)
         if response is None:
@@ -508,7 +507,7 @@ class Trello():
 
     def _get_custom_fields(self, board_id):
         url = self.url + 'boards/{}/customFields'.format(board_id)
-        params = self.query
+        params = self._authorize()
         response = self._make_request('GET', url, params)
         if response is None:
             print('Unable to get custom fields from Trello')
@@ -561,7 +560,7 @@ class Trello():
         is_premium = False
 
         url = self.url + 'boards/{}'.format(board_id)
-        params = self.query
+        params = self._authorize()
         params['fields'] = 'idOrganization'
         response = self._make_request('GET', url, params, json=True)
         if response is None:
@@ -575,7 +574,7 @@ class Trello():
             return is_premium # not premium board because this field doesn't exist
 
         url = self.url + 'organizations/{}'.format(organization_id)
-        params = self.query
+        params = self._authorize()
         params['fields'] = 'products'
         response = self._make_request('GET', url, params, json=True)
         if response is None:
@@ -591,7 +590,7 @@ class Trello():
 
     def _get_list_of_card(self, card_id):
         url = self.url + 'cards/{}/list'.format(card_id)
-        params = self.query
+        params = self._authorize()
         response = self._make_request('GET', url, params)
         if response is None:
             return None
@@ -600,11 +599,13 @@ class Trello():
         return res['name']
 
     def sync(self, idea, stage, dry_run, verbose):
+        old_stage = None
         proj_name = idea.name
         card_id = self._get_card(idea)
+
+        # card does not exist. make it.  it was made offline
         if card_id == None or card_id == '':
             if not dry_run:
-                # card does not exist. make it.  it was made offline
                 card_id, board_id = self.make_card(idea)
                 if card_id is None or board_id is None:
                     return
@@ -613,22 +614,25 @@ class Trello():
                     return
                 self.save_card(card_id, idea)
             print('{} was created'.format(proj_name))
-        else:
-            old_stage = self._get_list_of_card(card_id)
-            if old_stage == None:
-                print('WARN: Trello card for {} does not exist'.format(proj_name))
-                return
-            if old_stage == stage:
-                if verbose:
-                    print('{} remains in {}'.format(proj_name, stage))
-                return # stage did not change, nothing to sync
+            old_stage = 'Script'
 
-            if not dry_run:
-                success = self.move_card(idea, stage)
-                if not success:
-                    print("ERROR: Unable to sync {} from {} to {}".format(proj_name, old_stage, stage))
-                    return
-            print('{} was moved from {} to {}'.format(proj_name, old_stage, stage))
+        if old_stage != 'Script':
+            old_stage = self._get_list_of_card(card_id)
+        if old_stage == None:
+            print('WARN: Trello card for {} does not exist'.format(proj_name))
+            return
+        if old_stage == stage:
+            if verbose:
+                print('{} remains in {}'.format(proj_name, stage))
+            return # stage did not change, nothing to sync
+
+        # do sync
+        if not dry_run:
+            success = self.move_card(idea, stage)
+            if not success:
+                print("ERROR: Unable to sync {} from {} to {}".format(proj_name, old_stage, stage))
+                return
+        print('{} was moved from {} to {}'.format(proj_name, old_stage, stage))
 
         if 'Upload' == stage and not dry_run:
             stats = idea.get_render_stats()
