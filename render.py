@@ -35,7 +35,7 @@ def loop(channel, trello, args, renderable):
         print('Rendering {}/{} ({})'.format(counter, total, idea.name))
         try:
             stats = davinci.render_video()
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, SystemError, ValueError):
             print('\nTerminating renders')
             break
         success = stats['success']

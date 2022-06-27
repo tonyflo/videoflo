@@ -193,19 +193,18 @@ class Davinci():
                 render_status = self.project.GetRenderJobStatus(jobid)
             except TypeError:
                 print('Uh oh. Did DaVinci Resolve crash?')
-                raise KeyboardInterrupt # hack
+                raise SystemError
             percent = render_status['CompletionPercentage']
-            print(' Progress: {}%'.format(percent), end='\r')
+            status = render_status['JobStatus']
+            print('{}: {}%'.format(status, percent), end='\r')
 
-        render_status = self.project.GetRenderJobStatus(jobid)
-        job_status = render_status['JobStatus']
-        if job_status != 'Complete':
+        if status != 'Complete' and percent != 100:
             print('Failed to render {}'.format(self.idea.name))
             self._delete_all_render_jobs()
-            return stats
+            raise ValueError
 
         duration = datetime.now() - start_time
-        print('Render time was {}'.format(duration))
+        print('{}: {}% in {}'.format(status, percent, duration))
 
         stats['RenderTime'] = round(duration.total_seconds(), 2)
         stats = self._set_stats(stats)
