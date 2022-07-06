@@ -111,7 +111,8 @@ def do_uploads(upload_dict):
     upload_total = len(upload_dict)
     start_time = datetime.now()
     for card_id, video in upload_dict.items():
-        print('Starting upload for {}'.format(video.file))
+        file_size_gb = round(video.video_size / 1024 / 1024 / 1024, 2)
+        print('Starting upload for {} ({} GB)'.format(video.file, file_size_gb))
         video_id = video.upload()
         if video_id is not None:
             upload_count += 1
