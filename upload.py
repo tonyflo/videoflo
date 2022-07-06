@@ -11,12 +11,14 @@ from datetime import datetime
 
 # get the thumbnail file
 def get_thumbnail(path):
-    png_files = list(path.glob('[!.]*.png'))
-    num_png = len(png_files)
-    if num_png != 1:
-        print('FIX: Found {} png files'.format(num_png, path))
+    img_files = []
+    for ext in ['png', 'jpg', 'jpeg']:
+        img_files.extend(path.glob('[!.]*.' + ext))
+    num_img = len(img_files)
+    if num_img != 1:
+        print('FIX: Found {} thumbnail image files'.format(num_img, path))
         return None
-    return str(png_files[0])
+    return str(img_files[0])
 
 # get the video file
 def get_video_file(path):
@@ -80,6 +82,7 @@ def get_upload_dict(channel, trello, limit):
         warn = warn + 1 if not video.check_date() else warn
         warn = warn + 1 if not video.check_tags() else warn
         warn = warn + 1 if not video.check_hashtags() else warn
+        warn = warn + 1 if not video.check_thumbnail() else warn
         video.format_description()
 
         total_upload_size += video.video_size

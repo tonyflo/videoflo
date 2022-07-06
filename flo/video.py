@@ -45,6 +45,17 @@ class Video():
             length = sum([len(t)+3 if ' ' in t else len(t)+1 for t in tags])-1
             return length
 
+    def check_thumbnail(self):
+        if self.thumbnail is None:
+            return True
+
+        thumb_size = round(self._get_file_size(self.thumbnail) / 1024 / 1024, 2)
+        if thumb_size > 2:
+            print('FIX: Thumbnail larger than 2MB ({}MB)'.format(thumb_size))
+            return False
+
+        return True
+
     # check for a good title
     # TODO: check for title longer than 70 due to truncation?
     def check_title(self):
