@@ -18,7 +18,7 @@ def add_tag(tag, path, do_open=False):
     if not USING_MAC:
         return
 
-    mac_tag.add([tag], [path])
+    mac_tag.add(tag, path)
     if do_open:
         open_dir(path)
 
