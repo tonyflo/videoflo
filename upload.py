@@ -1,5 +1,5 @@
 import os
-from pathlib import Path
+from pathlib2 import Path
 from flo.idea import Idea
 from flo.video import Video
 from flo.trello import Trello

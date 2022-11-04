@@ -2,7 +2,7 @@ import os
 import sys
 import time
 import warnings
-from pathlib import Path
+from pathlib2 import Path
 from datetime import datetime
 
 

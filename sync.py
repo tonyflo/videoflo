@@ -1,7 +1,7 @@
 # Create structure for new video idea
 
 import os
-from pathlib import Path
+from glob import glob
 from flo.idea import Idea
 from flo.trello import Trello
 from flo.channel import Channel
@@ -19,8 +19,7 @@ def go():
     if dry_run:
         print('THIS IS JUST A DRY RUN')
 
-    channel_path = Path(channel.path)
-    stage_file_list = list(channel_path.rglob(STAGEFILE))
+    stage_file_list = glob(os.path.join(channel.path, '*', STAGEFILE))
     for stage_file in stage_file_list:
         proj_name = os.path.basename(os.path.dirname(stage_file))
         with open(stage_file) as f:
