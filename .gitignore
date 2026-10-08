@@ -2,3 +2,7 @@
 __pycache__/
 *.pyc
 settings.ini
+
+__pycache__/
+*.pyc
+.venv/

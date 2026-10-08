@@ -1,7 +1,7 @@
 # Mark this video project as ready to film
 
 from flo.idea import Idea
-from flo.trello import Trello
+from flo.planka import Planka
 from flo.videoflo import VideoFlo
 from flo.mactag import update_tag
 
@@ -16,11 +16,11 @@ def go():
         return
 
     if not idea.offline:
-        trello = Trello()
-        if not trello.lists_exist(['Film'], idea.channel):
+        planka = Planka()
+        if not planka.lists_exist(['Film'], idea.channel):
             return
 
-        success = trello.move_card(idea, 'Film')
+        success = planka.move_card(idea, 'Film')
         if not success:
             return
 

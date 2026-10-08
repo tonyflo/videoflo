@@ -3,7 +3,7 @@
 import os
 from glob import glob
 from flo.idea import Idea
-from flo.trello import Trello
+from flo.planka import Planka
 from flo.channel import Channel
 from flo.videoflo import VideoFlo
 from flo.const import STAGES, STAGEFILE
@@ -34,8 +34,8 @@ def go():
         if not idea.exists():
             print('Directory for {} not found'.format(path))
             continue
-        trello = Trello()
-        trello.sync(idea, stage, dry_run, verbose)
+        planka = Planka()
+        planka.sync(idea, stage, dry_run, verbose)
 
     if len(stage_file_list) == 0:
         print('No videos found for {}'.format(channel.name))

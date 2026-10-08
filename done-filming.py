@@ -2,7 +2,7 @@
 
 import os
 from flo.idea import Idea
-from flo.trello import Trello
+from flo.planka import Planka
 from flo.videoflo import VideoFlo
 from flo.mactag import update_tag
 
@@ -17,11 +17,11 @@ def go():
         return
 
     if not idea.offline:
-        trello = Trello()
-        if not trello.lists_exist(['Edit'], idea.channel):
+        planka = Planka()
+        if not planka.lists_exist(['Edit'], idea.channel):
             return
 
-        success = trello.move_card(idea, 'Edit')
+        success = planka.move_card(idea, 'Edit')
         if not success:
             return
 

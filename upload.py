@@ -2,7 +2,7 @@ import os
 from pathlib2 import Path
 from flo.idea import Idea
 from flo.video import Video
-from flo.trello import Trello
+from flo.planka import Planka
 from flo.channel import Channel
 from flo.videoflo import VideoFlo
 from flo.mactag import update_tag
@@ -31,9 +31,9 @@ def get_video_file(path):
     return video_file
 
 # loop over directories tagged as ready for upload and check for required files
-def get_upload_dict(channel, trello, limit):
+def get_upload_dict(channel, planka, limit):
     print('Checking videos for {}'.format(channel.name))
-    uploadable = trello.get_list('Upload', channel)
+    uploadable = planka.get_list('Upload', channel)
     upload_dict = {}
 
     total_upload_size = 0
@@ -44,14 +44,18 @@ def get_upload_dict(channel, trello, limit):
             'title': item['name'],
             'description': item['desc'],
             'scheduled': item['due'],
-            'tags': trello.get_checklist(item['idChecklists'], 'tags'),
-            'hashtags': trello.get_checklist(item['idChecklists'], 'hashtags'),
+            'tags': planka.get_checklist(item['idChecklists'], 'tags'),
+            'hashtags': planka.get_checklist(item['idChecklists'], 'hashtags'),
         }
+
+        if metadata['tags'] is None or metadata['hashtags'] is None:
+            print('Unable to read Planka tag lists; aborting upload checks.')
+            return {}
 
         card_id = item['id']
         path = channel.find_path_for_id(card_id)
         if path is None:
-            print('Could not find local path for {}'.format(name))
+            print('Could not find local path for {}'.format(item['name']))
             continue
 
         path = Path(path)
@@ -117,9 +121,9 @@ def do_uploads(upload_dict):
         if video_id is not None:
             upload_count += 1
             update_tag('Scheduled', video.path)
-            trello = Trello()
-            trello.move_card(video.idea, 'Scheduled')
-            trello.attach_links_to_card(card_id, video_id)
+            planka = Planka()
+            planka.move_card(video.idea, 'Scheduled')
+            planka.attach_links_to_card(card_id, video_id)
     duration = datetime.now() - start_time
     print('Uploaded {}/{} videos in {}'.format(upload_count, upload_total, duration))
 
@@ -133,11 +137,11 @@ def go():
     if limit > 0:
         print("Limiting to {} video upload(s)".format(limit))
 
-    trello = Trello()
-    if not trello.lists_exist(['Upload', 'Scheduled'], channel):
+    planka = Planka()
+    if not planka.lists_exist(['Upload', 'Scheduled'], channel):
         return
 
-    upload_dict = get_upload_dict(channel, trello, limit)
+    upload_dict = get_upload_dict(channel, planka, limit)
     if not dry_run and len(upload_dict) > 0:
         do_uploads(upload_dict)
 

@@ -16,14 +16,14 @@ class VideoFlo():
 
     def __init__(self):
         # read settings file
-        config = configparser.ConfigParser()
+        config = configparser.ConfigParser(interpolation=None)
         config.read(SETTINGSFILE)
         self.config = config
         self.root= config['main']['root_dir']
         self.channels = [Channel(self.config, c) for c in self._get_channels()]
 
     def _get_channels(self):
-        return set(self.config.sections()) - set(['main', 'trello'])
+        return set(self.config.sections()) - set(['main', 'trello', 'planka'])
 
     def _add_channel_arg(self, parser):
         parser.add_argument('-c', '--channel',

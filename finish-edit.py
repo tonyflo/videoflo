@@ -1,7 +1,7 @@
 # Export a DaVinci project and update the video directory tag accordingly
 
 from flo.idea import Idea
-from flo.trello import Trello
+from flo.planka import Planka
 from flo.davinci import Davinci
 from flo.videoflo import VideoFlo
 from flo.mactag import update_tag
@@ -31,11 +31,11 @@ def go():
 
     args = flo.get_finish_edit_arguments()
     if not args.offline:
-        trello = Trello()
-        if not trello.lists_exist(['Render'], idea.channel):
+        planka = Planka()
+        if not planka.lists_exist(['Render'], idea.channel):
             return
 
-        success = trello.move_card(idea, 'Render')
+        success = planka.move_card(idea, 'Render')
         if not success:
             return
 

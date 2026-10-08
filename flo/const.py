@@ -1,6 +1,6 @@
 # Constants
 
-CARDFILE = '.card'
+CARDFILE = '.planka-card'
 STAGEFILE = '.stage'
 STATSFILE = '.stats'
 SETTINGSFILE = 'settings.ini'
