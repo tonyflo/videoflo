@@ -26,7 +26,7 @@ def slug(value):
     return re.sub(r'[^a-z0-9]+', '-', value.lower()).strip('-')[:120] or 'video'
 
 
-def build_plan(root, board, matches=(), trash=(), ignore=()):
+def build_plan(root, board, matches=(), trash=(), ignore=(), create_stages=('Idea', 'Script', 'Film')):
     root = Path(root)
     if not root.is_dir():
         raise ValueError('Channel folder is unavailable: {}'.format(root))
@@ -105,7 +105,7 @@ def build_plan(root, board, matches=(), trash=(), ignore=()):
     # Never reuse an unrelated folder merely because its slug matches a title.
     used_names = {path.name.casefold() for path in root.iterdir()}
     for card in sorted(cards.values(), key=lambda card: (stage_by_list[card['listId']], card['name'], card['id'])):
-        if card['id'] in claimed:
+        if card['id'] in claimed or stage_by_list[card['listId']] not in create_stages:
             continue
         name = slug(card['name'])
         if name.casefold() in used_names:
@@ -152,6 +152,9 @@ def go():
     parser.add_argument('--match', action='append', default=[], metavar='FOLDER=CARD_TITLE_OR_ID')
     parser.add_argument('--trash', nargs='+', default=[], metavar='FOLDER')
     parser.add_argument('--ignore', nargs='+', default=[], metavar='FOLDER')
+    parser.add_argument('--create-stages', nargs='+', choices=STAGES,
+                        default=['Idea', 'Script', 'Film'],
+                        help='Create missing folders only in these stages (default: Idea Script Film)')
     parser.add_argument('--apply', action='store_true', help='Apply the preview to local folders only')
     args = parser.parse_args()
     planka = Planka()
@@ -163,7 +166,7 @@ def go():
         board = planka._board(board_id)
         if board is None:
             return 1
-        actions, notes = build_plan(root, board, args.match, args.trash, args.ignore)
+        actions, notes = build_plan(root, board, args.match, args.trash, args.ignore, args.create_stages)
         print('Channel folder: {}'.format(root))
         print('APPLY' if args.apply else 'PREVIEW ONLY')
         for note in notes:
