@@ -46,7 +46,7 @@ class Channel:
          schedule = 6
 
       Defaulting to an every day release schedule. Please adjust your
-      settings.ini file according to your release schedule as instructed above.       You are always free to change the due date on the Trello card.'''
+      settings.ini file according to your release schedule as instructed above.       You are always free to change the due date on the Planka card.'''
 
         schedule = [1, 2, 3, 4, 5, 6, 7]
         default_schedule = ','.join([str(dow) for dow in schedule])

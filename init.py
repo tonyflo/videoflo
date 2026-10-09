@@ -1,7 +1,7 @@
-# Initialize Trello and YouTube
+# Initialize Planka and YouTube
 
 from flo.videoflo import VideoFlo
-from flo.trello import Trello
+from flo.planka import Planka
 from flo.channel import Channel
 from flo.const import STAGES
 
@@ -11,10 +11,11 @@ def go():
     args = flo.get_init_arguments()
     channel = Channel(flo.config, args.channel)
 
-    trello = Trello()
-    if not trello.lists_exist(STAGES, channel, create=True):
+    planka = Planka()
+    if not planka.lists_exist(STAGES, channel, create=True):
         return
 
-    trello.add_custom_fields(channel)
+    if not planka.add_custom_fields(channel):
+        print('Unable to initialize Planka custom fields. Check board editor permissions.')
 
 go()

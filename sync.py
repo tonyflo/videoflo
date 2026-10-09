@@ -3,10 +3,11 @@
 import os
 from glob import glob
 from flo.idea import Idea
-from flo.trello import Trello
+from flo.planka import Planka
 from flo.channel import Channel
 from flo.videoflo import VideoFlo
 from flo.const import STAGES, STAGEFILE
+from flo.linking import sync_from_planka
 
 
 def go():
@@ -19,11 +20,17 @@ def go():
     if dry_run:
         print('THIS IS JUST A DRY RUN')
 
+    if args.from_planka:
+        sync_from_planka(Planka(), channel, args.stages, dry_run)
+        return
+
     stage_file_list = glob(os.path.join(channel.path, '*', STAGEFILE))
     for stage_file in stage_file_list:
         proj_name = os.path.basename(os.path.dirname(stage_file))
         with open(stage_file) as f:
             stage = f.read().strip()
+            if stage not in args.stages:
+                continue
             if stage not in STAGES:
                 print("Invalid name '{}' at {}".format(stage, stage_file))
                 continue
@@ -32,10 +39,10 @@ def go():
         idea = Idea()
         idea.from_project(proj_name, channel)
         if not idea.exists():
-            print('Directory for {} not found'.format(path))
+            print('Directory for {} not found'.format(idea.path))
             continue
-        trello = Trello()
-        trello.sync(idea, stage, dry_run, verbose)
+        planka = Planka()
+        planka.sync(idea, stage, dry_run, verbose)
 
     if len(stage_file_list) == 0:
         print('No videos found for {}'.format(channel.name))

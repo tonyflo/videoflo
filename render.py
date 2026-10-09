@@ -2,7 +2,7 @@
 
 import os
 from flo.idea import Idea
-from flo.trello import Trello
+from flo.planka import Planka
 from flo.davinci import Davinci
 from flo.channel import Channel
 from flo.videoflo import VideoFlo
@@ -10,7 +10,7 @@ from flo.mactag import update_tag
 from datetime import datetime
 
 # loop over videos ready to be rendered
-def loop(channel, trello, args, renderable):
+def loop(channel, planka, args, renderable):
 
     davinci = Davinci()
     if davinci.resolve is None:
@@ -43,21 +43,21 @@ def loop(channel, trello, args, renderable):
             idea.save_render_stats(stats)
             update_tag('Upload', idea.path)
             if not args.offline:
-                success = trello.move_card(idea, 'Upload')
-                trello.set_render_stats(idea, stats)
+                success = planka.move_card(idea, 'Upload')
+                planka.set_render_stats(idea, stats)
         finished = finished + 1 if success else finished
 
     duration = datetime.now() - start_time
     print('Rendered {}/{} videos in {}'.format(finished, total, duration))
 
-def _get_render_list(channel, trello, args):
+def _get_render_list(channel, planka, args):
     renderable = []
     if args.offline:
         renderable = channel.get_list('Render')
     else:
-        if not trello.lists_exist(['Render', 'Upload'], channel):
+        if not planka.lists_exist(['Render', 'Upload'], channel):
             return None
-        renderable = [channel.find_path_for_id(item['id']) for item in trello.get_list('Render', channel)]
+        renderable = [channel.find_path_for_id(item['id']) for item in planka.get_list('Render', channel)]
 
     return renderable
 
@@ -66,12 +66,12 @@ def go():
     args = flo.get_render_arguments()
     channel = Channel(flo.config, args.channel)
 
-    trello = Trello()
-    renderable = _get_render_list(channel, trello, args)
+    planka = Planka()
+    renderable = _get_render_list(channel, planka, args)
     if renderable is None or len(renderable) == 0:
         print('Nothing to render')
         return
 
-    loop(channel, trello, args, renderable)
+    loop(channel, planka, args, renderable)
 
 go()
