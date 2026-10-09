@@ -20,3 +20,5 @@ Then rerun the same arguments with --apply. Reruns use saved card IDs to avoid d
 Regression cases are in tests/test_reconcile.py. They were added during a turn
 without an execution workspace and have not been run yet:
 `python3 -m unittest discover -s tests -v`.
+
+New folders are created only for Idea, Script, and Film cards by default. Existing folders can still link to cards in any supported stage, including Published. Use `--create-stages` to explicitly choose other stages.
