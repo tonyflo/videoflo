@@ -27,6 +27,14 @@ class ReconcileTests(unittest.TestCase):
             [('LINK', 'cpanel-alternatives-2026'), ('CREATE', 'my-idea')])
         self.assertEqual((self.root / 'cpanel-alternatives-2026' / 'video.mov').read_text(), 'media')
         self.assertFalse((self.root / 'my-idea').exists())
+    def test_unmatched_published_cards_do_not_create_folders_by_default(self):
+        actions, _ = build_plan(self.root, self.board)
+        self.assertEqual([(a['kind'], a['card']['id']) for a in actions], [('CREATE', 'one')])
+
+    def test_creating_published_folders_requires_explicit_stage(self):
+        actions, _ = build_plan(self.root, self.board, create_stages=['Published'])
+        self.assertEqual([(a['kind'], a['card']['id']) for a in actions], [('CREATE', 'two')])
+
     def test_trash_and_ignored_folders_preview_is_read_only(self):
         for name in ('Planka Test', '108_PANA'):
             (self.root / name).mkdir()
