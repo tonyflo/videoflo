@@ -75,7 +75,9 @@ class LinkingTests(unittest.TestCase):
 
     def test_two_folders_cannot_claim_same_card(self):
         Path(self.idea.path, CARDFILE).unlink()
-        Path('videos/Project').mkdir()
+        # Different filesystem names with the same normalized card-title match.
+        # A case-only difference cannot coexist on typical macOS volumes.
+        Path('videos/pro-ject').mkdir()
         self.board['included']['cards'] = [{'id': 'c2', 'name': 'PROJECT', 'listId': 'l1'}]
         with patch('builtins.print'):
             self.assertEqual(link_plans(self.planka, self.channel, self.board, ['Script']), [])
