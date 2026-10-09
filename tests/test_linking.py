@@ -1,5 +1,3 @@
-import subprocess
-import sys
 from pathlib import Path
 from unittest.mock import patch
 
@@ -111,7 +109,7 @@ class LinkingTests(unittest.TestCase):
         self.assertEqual(Path(self.idea.path, '.stage').read_text(), 'Idea')
 
     def test_new_idea_offline_cli(self):
-        result = subprocess.run([sys.executable, str(REPO / 'new-idea.py'), 'possible-video', '-c', 'ttt', '--offline'], capture_output=True, text=True)
+        result = fixtures.run_cli('new-idea.py', 'possible-video', '-c', 'ttt', '--offline')
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(Path('videos/possible-video/.stage').read_text(), 'Idea')
 

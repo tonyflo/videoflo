@@ -20,6 +20,20 @@ from flo.videoflo import VideoFlo
 REPO = Path(__file__).resolve().parents[1]
 
 
+def run_cli(script, *args):
+    # Exercise the real CLI in a child process, but never touch Finder or open UI.
+    bootstrap = """import sys, runpy
+from pathlib import Path
+from unittest.mock import patch
+script = sys.argv.pop(1)
+sys.path.insert(0, str(Path(script).parent))
+with patch('flo.mactag.USING_MAC', False), patch('flo.mactag.call', side_effect=AssertionError('Native UI commands must not run in tests')):
+    runpy.run_path(script, run_name='__main__')
+"""
+    return subprocess.run([sys.executable, '-c', bootstrap, str(REPO / script), *args],
+                          capture_output=True, text=True)
+
+
 class PlankaTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -41,6 +55,8 @@ planka_board_id = b1
 '''.format(root=self.temp.name))
         self.env_patch = patch.dict(os.environ, {'PLANKA_API_KEY': '', 'PLANKA_TOKEN': ''})
         self.env_patch.start()
+        self.finder_patch = patch('flo.mactag.USING_MAC', False)
+        self.finder_patch.start()
         self.planka = Planka()
         self.channel = Channel(self.planka.config, 'ttt')
         Path('videos/project').mkdir(parents=True)
@@ -60,6 +76,7 @@ planka_board_id = b1
                              {'id': 'f3', 'name': 'Size', 'customFieldGroupId': 'g1'}]}}
 
     def tearDown(self):
+        self.finder_patch.stop()
         self.env_patch.stop()
         os.chdir(self.old_cwd)
         self.temp.cleanup()
@@ -227,7 +244,7 @@ planka_board_id = b1
 
     def test_offline_cli_works_without_planka_settings_or_credentials(self):
         Path('settings.ini').write_text(Path('settings.ini').read_text().replace('url = https://planka.example.test/team/', 'url =').replace('token = test-token', 'token ='))
-        result = subprocess.run([sys.executable, str(REPO / 'new-video.py'), 'offline-project', '-c', 'ttt', '--offline'], capture_output=True, text=True)
+        result = run_cli('new-video.py', 'offline-project', '-c', 'ttt', '--offline')
         self.assertEqual(result.returncode, 0, result.stderr)
         project = Path('videos/offline-project')
         self.assertEqual((project / '.stage').read_text(), 'Script')
