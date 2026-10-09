@@ -102,6 +102,10 @@ class VideoFlo():
                             action='store_true',
                             required=False,
                             help="Verbose output of each video status regardless of offline changes")
+        parser.add_argument('--from-planka', action='store_true',
+                            help='Link matching existing folders and adopt Planka stages locally; never write to Planka')
+        parser.add_argument('--stages', nargs='+', choices=STAGES, default=STAGES,
+                            help='Only sync these stages')
         args = parser.parse_args()
         return args
 

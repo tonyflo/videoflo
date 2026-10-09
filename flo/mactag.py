@@ -29,10 +29,9 @@ def open_dir(path):
 
 # update tag for path after removing all exitings tags
 def update_tag(tag, path, do_open=False):
-    if not USING_MAC:
-        return
-
-    mac_tag.remove(['*'], [path])
+    if USING_MAC:
+        # Keep unrelated Finder tags; replace only workflow stage tags.
+        mac_tag.remove(STAGES, [path])
     add_tag(tag, path, do_open)
 
 # get tags for path

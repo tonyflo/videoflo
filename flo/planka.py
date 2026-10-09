@@ -163,7 +163,8 @@ class Planka:
         board = self._board(board_id)
         if board is None:
             raise RuntimeError('Unable to read Planka schedule; no card was created')
-        list_ids = {item['id'] for item in self._active_lists(board)}
+        list_ids = {item['id'] for item in self._active_lists(board)
+                    if item['name'] not in ('Idea', 'Published')}
         dates = [parse_date(card['dueDate']) for card in board.get('included', {}).get('cards', [])
                  if card.get('dueDate') and card['listId'] in list_ids]
         if not dates or not schedule:
@@ -173,20 +174,23 @@ class Planka:
             next_date += timedelta(days=1)
         return next_date
 
-    def make_card(self, idea):
+    def make_card(self, idea, stage='Script'):
+        if stage not in ('Idea', 'Script'):
+            raise ValueError('New cards start in Idea or Script')
         board_id = self._get_board(idea.channel)
         if not board_id:
             return None, None
-        list_id = self._get_list(board_id, 'Script')
+        list_id = self._get_list(board_id, stage)
         if not list_id:
             return None, None
-        due = self._get_next_due_date(board_id, idea.channel.schedule)
-        if due is None:
-            due = datetime.now(timezone.utc) + timedelta(days=7)
-            print('NOTE: set due date for 1 week from today')
-        response = self._request('POST', 'lists/{}/cards'.format(list_id),
-                                 {'type': 'project', 'name': idea.name, 'position': 0,
-                                  'dueDate': due.isoformat()})
+        payload = {'type': 'project', 'name': idea.name, 'position': 0}
+        if stage == 'Script':
+            due = self._get_next_due_date(board_id, idea.channel.schedule)
+            if due is None:
+                due = datetime.now(timezone.utc) + timedelta(days=7)
+                print('NOTE: set due date for 1 week from today')
+            payload['dueDate'] = due.isoformat()
+        response = self._request('POST', 'lists/{}/cards'.format(list_id), payload)
         if not response or 'item' not in response:
             return None, None
         card_id = response['item']['id']
@@ -213,6 +217,25 @@ class Planka:
             return False
         response = self._request('PATCH', 'cards/{}'.format(card_id),
                                  {'listId': list_id, 'position': 0})
+        return bool(response and 'item' in response)
+
+    def ready_to_script(self, idea):
+        """Commit an idea to production, preserving any manually chosen due date."""
+        board_id = self._get_board(idea.channel)
+        card_id = self._get_card(idea)
+        if not board_id or not card_id:
+            return False
+        list_id = self._get_list(board_id, 'Script')
+        response = self._request('GET', 'cards/{}'.format(card_id))
+        if not list_id or not response or response.get('item', {}).get('boardId') != board_id:
+            return False
+        payload = {'listId': list_id, 'position': 0}
+        if not response['item'].get('dueDate'):
+            due = self._get_next_due_date(board_id, idea.channel.schedule)
+            if due is None:
+                due = datetime.now(timezone.utc) + timedelta(days=7)
+            payload['dueDate'] = due.isoformat()
+        response = self._request('PATCH', 'cards/{}'.format(card_id), payload)
         return bool(response and 'item' in response)
 
     def get_list(self, list_name, channel):
@@ -344,14 +367,15 @@ class Planka:
             if dry_run:
                 print('{} would be created in {}'.format(idea.name, stage))
                 return
-            card_id, board_id = self.make_card(idea)
+            start_stage = 'Idea' if stage == 'Idea' else 'Script'
+            card_id, board_id = self.make_card(idea, stage=start_stage)
             if not card_id:
                 return
             if not self.add_filename_to_card(card_id, board_id, idea.name):
                 self.delete_card(card_id)
                 return
             self.save_card(card_id, idea)
-            old_stage = 'Script'
+            old_stage = start_stage
             print('{} was created'.format(idea.name))
         if old_stage is None:
             old_stage = self._get_list_of_card(card_id)
@@ -363,7 +387,9 @@ class Planka:
             if dry_run:
                 print('{} would be moved from {} to {}'.format(idea.name, old_stage, stage))
                 return
-            if not self.move_card(idea, stage):
+            success = (self.ready_to_script(idea) if old_stage == 'Idea' and stage == 'Script'
+                       else self.move_card(idea, stage))
+            if not success:
                 print('ERROR: Unable to sync {} from {} to {}'.format(idea.name, old_stage, stage))
                 return
             print('{} was moved from {} to {}'.format(idea.name, old_stage, stage))

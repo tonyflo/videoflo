@@ -72,7 +72,7 @@ existing lists and fields. Planka 1.x is not supported.
 
 | VideoFlo feature | Planka equivalent |
 | --- | --- |
-| Script → Film → Edit → Finish → Render → Upload → Scheduled | Named board lists |
+| Idea → Script → Film → Edit → Finish → Render → Upload → Scheduled → Published | Named board lists |
 | Video title / description / scheduled release | Card name / description / due date |
 | Tags and hashtags | Task lists named `tags` and `hashtags`, one task per entry |
 | Filename and render stats | `VideoFlo` board custom-field group |
@@ -81,7 +81,7 @@ existing lists and fields. Planka 1.x is not supported.
 All task names are used as tags regardless of whether they are checked, matching
 the original workflow. Stats are stored as text because Planka custom-field
 values are strings. Due dates are normalized to UTC; cards in archive/trash lists
-do not extend the publishing schedule. Keep the `Scheduled` list active or closed
+do not extend the publishing schedule; Idea and Published dates are also excluded. Keep the `Scheduled` list active or closed
 so its due dates remain part of that schedule. With no existing due dates,
 VideoFlo retains its previous default of one week from today.
 
@@ -127,3 +127,70 @@ moves, custom fields, link attachments, error handling, and offline sync. Live
 Planka, Resolve, macOS Finder tags, and YouTube uploads require testing on your
 own workstation. The existing YouTube API quota limitation described above still
 applies; this change does not restore the retired shared YouTube credentials.
+
+## Ideas, committed videos, and importing your existing board
+
+The board lists and local workflow tags are now exactly:
+**Idea, Script, Film, Edit, Finish, Render, Upload, Scheduled, Published**.
+Idea is a possible video; Script is a video you have committed to producing.
+Existing board list names are used as-is.
+
+```sh
+# Save an idea without a release date (also supports --offline).
+python new-idea.py 'possible-video' -c ttt
+
+# Commit that idea: move to Script and assign a release date if it has none.
+python ready-to-script.py 'possible-video' -c ttt
+
+# Or start a committed project directly in Script, as before.
+python new-video.py 'committed-video' -c ttt
+```
+
+Finder workflow tags and the `.stage` file use the same names. Updating a stage
+preserves unrelated Finder tags. Existing published cards can be adopted locally
+with the Published tag. A manual card move in Planka does not automatically
+update your Mac; run the following read-only import to bring the Mac up to date.
+
+### Link existing folders and adopt Idea/Script/Film from Planka
+
+Run from the VideoFlo directory with your Python environment active and API key
+configured. First preview:
+
+```sh
+python sync.py -c ttt --from-planka --stages Idea Script Film --dry-run
+```
+
+Then apply the same import:
+
+```sh
+python sync.py -c ttt --from-planka --stages Idea Script Film
+```
+
+This mode only reads Planka. It links existing folders, sets their `.stage`
+files, and updates Finder workflow tags to the card's current list. It never
+creates/deletes/moves cards, changes card content, or creates/renames video
+folders. Local media files and old Trello `.card` files remain intact.
+
+Matching checks an existing `.planka-card` ID first, then an exact `filename`
+custom-field value, then the card title ignoring case, punctuation and spacing.
+For example, `self-host-openclaw` matches `Self-Host OpenClaw`. There is no fuzzy
+matching. Unmatched folders are reported and left untouched. Cards without a
+local folder remain board-only ideas until you create/link a folder.
+
+Duplicate titles across lists are ambiguous and skipped, even if only one of
+those lists was requested. Multiple folders claiming the same card are also
+skipped. Resolve these cases explicitly:
+
+```sh
+python link-card.py 'self-host-immich' PLANKA_FILM_CARD_ID -c ttt --adopt-stage --dry-run
+python link-card.py 'self-host-immich' PLANKA_FILM_CARD_ID -c ttt --adopt-stage
+```
+
+Copy the ID from the specific card's URL. `--adopt-stage` adopts the card's stage
+locally and does not move the card. A folder already linked to a different
+Planka card is rejected rather than silently relinked.
+
+Omit `--stages` to adopt all supported stages, including Published, for linked or
+uniquely matched folders. The original `sync.py` without `--from-planka` still
+pushes local stages to Planka and can create cards for offline projects; use the
+Planka-to-Mac import first when migrating existing cards.

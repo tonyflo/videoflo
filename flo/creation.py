@@ -1,0 +1,39 @@
+# Create structure for new video idea
+
+from flo.idea import Idea
+from flo.videoflo import VideoFlo
+from flo.planka import Planka
+from flo.mactag import add_tag
+
+
+def create_project(stage):
+    flo = VideoFlo()
+    idea = Idea()
+    idea.read_user_input(flo)
+
+    planka = Planka()
+    if not idea.offline:
+        if not planka.lists_exist([stage], idea.channel):
+            return
+        card_id, board_id = planka.make_card(idea, stage=stage)
+        if card_id is None or board_id is None:
+            return
+
+        if not planka.add_filename_to_card(card_id, board_id, idea.name):
+            planka.delete_card(card_id)
+            return
+
+    idea_directory = idea.make_directory()
+    if idea_directory is None:
+        if not idea.offline:
+            planka.delete_card(card_id)
+        return
+
+    idea.make_files()
+    idea.make_directories()
+
+    if not idea.offline:
+        planka.save_card(card_id, idea)
+
+    add_tag(stage, idea.path, do_open=True)
+
